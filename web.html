@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeByLouay - Professional Software Development</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'code-blue': '#0f172a',
+                        'code-blue-light': '#1e293b',
+                        'accent-blue': '#3b82f6',
+                        'accent-cyan': '#06b6d4'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-code-blue text-white font-inter">
+    <!-- Particle Canvas -->
+    <canvas id="particles-canvas"></canvas>
+    
+    <!-- Cursor Trail -->
+    <div class="cursor-trail" id="cursor-trail"></div>
+    
+    <!-- Funny Eye Watcher -->
+    <div id="eye-watcher" class="fixed top-16 sm:top-20 right-2 sm:right-6 z-[9999] flex items-center space-x-2 sm:space-x-4 bg-black/90 backdrop-blur-lg rounded-full px-3 sm:px-6 py-2 sm:py-4 border-2 border-accent-blue/50 shadow-2xl transform translate-x-full transition-all duration-1000 ease-out max-w-[calc(100vw-1rem)] sm:max-w-none">
+        <div class="eye-container relative">
+            <div class="eye w-10 h-10 sm:w-14 sm:h-14 bg-white rounded-full flex items-center justify-center relative overflow-hidden shadow-lg">
+                <div class="pupil w-5 h-5 sm:w-7 sm:h-7 bg-black rounded-full transition-all duration-200 ease-out relative z-10" id="pupil"></div>
+                <div class="eye-shine absolute top-1 left-2 sm:top-2 sm:left-4 w-2 h-2 sm:w-3 sm:h-3 bg-white rounded-full opacity-90 z-20"></div>
+            </div>
+            <div class="eyelid absolute top-0 left-0 w-full h-0 bg-gradient-to-b from-pink-200 to-pink-300 rounded-full transition-all duration-300 z-30" id="eyelid"></div>
+        </div>
+        <div class="message-bubble bg-accent-blue/30 backdrop-blur-sm rounded-lg px-3 sm:px-4 py-2 sm:py-3 border border-accent-cyan/40 min-w-[160px] sm:min-w-[220px] shadow-lg">
+            <div class="text-accent-cyan font-mono text-xs sm:text-sm font-medium" id="eye-message">I see you 👀</div>
+        </div>
+        <button onclick="closeEyeWatcher()" class="text-gray-400 hover:text-white transition-colors ml-1 sm:ml-2 p-1 hover:bg-white/10 rounded flex-shrink-0">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+        </button>
+    </div>
+    
+    <!-- Interactive Terminal -->
+    <div id="terminal" class="terminal-window">
+        <div class="terminal-header">
+            <span class="text-accent-cyan">Louay's Terminal~$</span>
+            <button onclick="closeTerminal()" class="text-red-400 hover:text-red-300">✕</button>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+            <div>Welcome to CodeByLouay Terminal v2.0</div>
+            <div>Type 'help' for available commands</div>
+            <div class="mt-4">
+                <span class="text-accent-blue">CodeByLouay:~$</span>
+                <input type="text" id="terminal-input" class="bg-transparent border-none outline-none text-accent-cyan ml-2" placeholder="Enter command...">
+                <span class="terminal-cursor">|</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full nav-blur border-b border-slate-700/50 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+            <div class="flex justify-between items-center">
+                <div class="font-mono text-xl sm:text-2xl font-bold gradient-text pulse-glow">
+                    &lt;CodeByLouay/&gt;
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex space-x-8">
+                    <a href="#home" class="relative text-gray-300 hover:text-white transition-all duration-300 font-medium nav-link">Home</a>
+                    <a href="#about" class="relative text-gray-300 hover:text-white transition-all duration-300 font-medium nav-link">About</a>
+                    <a href="#skills" class="relative text-gray-300 hover:text-white transition-all duration-300 font-medium nav-link">Skills</a>
+                    <a href="#projects" class="relative text-gray-300 hover:text-white transition-all duration-300 font-medium nav-link">Projects</a>
+                    <a href="#experience" class="relative text-gray-300 hover:text-white transition-all duration-300 font-medium nav-link">Experience</a>
+                    <a href="#services" class="relative text-gray-300 hover:text-white transition-all duration-300 font-medium nav-link">Services</a>
+                    <a href="#contact" class="relative text-gray-300 hover:text-white transition-all duration-300 font-medium nav-link">Contact</a>
+                </div>
+                
+                <!-- Desktop Buttons -->
+                <div class="hidden md:flex space-x-3 lg:space-x-4">
+                    <button onclick="openTerminal()" class="glass-effect text-white hover:bg-white/10 px-3 lg:px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm lg:text-base">
+                        Terminal
+                    </button>
+                    <button onclick="scrollToSection('contact')" class="interactive-btn bg-gradient-to-r from-accent-blue to-accent-cyan text-white px-4 lg:px-6 py-2 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 text-sm lg:text-base">
+                        Hire Me
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg glass-effect transition-all duration-300">
+                    <svg id="menu-icon" class="w-6 h-6 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <svg id="close-icon" class="w-6 h-6 hidden transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="md:hidden absolute top-full left-0 right-0 nav-blur border-b border-slate-700/50 transform -translate-y-full opacity-0 invisible transition-all duration-300 ease-out">
+                <div class="px-4 py-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                    <a href="#home" class="block text-gray-300 hover:text-white transition-all duration-300 font-medium py-3 px-4 rounded-lg hover:bg-white/5 mobile-nav-link">🏠 Home</a>
+                    <a href="#about" class="block text-gray-300 hover:text-white transition-all duration-300 font-medium py-3 px-4 rounded-lg hover:bg-white/5 mobile-nav-link">👨‍💻 About</a>
+                    <a href="#skills" class="block text-gray-300 hover:text-white transition-all duration-300 font-medium py-3 px-4 rounded-lg hover:bg-white/5 mobile-nav-link">⚡ Skills</a>
+                    <a href="#projects" class="block text-gray-300 hover:text-white transition-all duration-300 font-medium py-3 px-4 rounded-lg hover:bg-white/5 mobile-nav-link">🚀 Projects</a>
+                    <a href="#experience" class="block text-gray-300 hover:text-white transition-all duration-300 font-medium py-3 px-4 rounded-lg hover:bg-white/5 mobile-nav-link">💼 Experience</a>
+                    <a href="#services" class="block text-gray-300 hover:text-white transition-all duration-300 font-medium py-3 px-4 rounded-lg hover:bg-white/5 mobile-nav-link">🛠️ Services</a>
+                    <a href="#contact" class="block text-gray-300 hover:text-white transition-all duration-300 font-medium py-3 px-4 rounded-lg hover:bg-white/5 mobile-nav-link">📧 Contact</a>
+                    <div class="pt-4 border-t border-slate-700/50 space-y-3">
+                        <button onclick="openTerminal(); closeMobileMenu();" class="w-full glass-effect text-white hover:bg-white/10 px-4 py-3 rounded-lg font-semibold transition-all duration-300 text-left">💻 Terminal</button>
+                        <button onclick="scrollToSection('contact'); closeMobileMenu();" class="w-full interactive-btn bg-gradient-to-r from-accent-blue to-accent-cyan text-white px-4 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">🎯 Hire Me</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center pt-16 sm:pt-20 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-code-blue via-code-blue-light to-code-blue opacity-50"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10">
+            <div class="section-fade text-center lg:text-left">
+                <div class="font-mono text-accent-cyan mb-4 sm:mb-6 text-sm sm:text-lg">console.log("Hello World!");</div>
+                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 sm:mb-8 leading-tight">
+                    Hi, I'm <span class="gradient-text">Louay</span>
+                </h1>
+                <div class="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-8 sm:mb-10 font-light">
+                    <span class="typing-animation font-medium" id="typing-text">Full-Stack Developer</span>
+                </div>
+                <p class="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-10 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                    I craft exceptional web and mobile applications that bring your ideas to life. 
+                    From concept to deployment, I deliver professional solutions that drive results.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center lg:justify-start">
+                    <button onclick="scrollToSection('contact')" class="interactive-btn bg-gradient-to-r from-accent-blue to-accent-cyan text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 glow-effect">
+                        Get In Touch
+                    </button>
+                    <button onclick="scrollToSection('projects')" class="interactive-btn glass-effect text-white hover:bg-white/10 px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all duration-300 hover:scale-105">
+                        View Projects
+                    </button>
+                </div>
+            </div>
+            <div class="floating-animation mt-8 lg:mt-0">
+                <div class="code-block rounded-2xl p-4 sm:p-6 lg:p-8 relative z-10 max-w-lg mx-auto lg:max-w-none" onclick="animateCode()">
+                    <div class="flex items-center mb-4 sm:mb-6">
+                        <div class="flex space-x-2 sm:space-x-3">
+                            <div class="w-3 h-3 sm:w-4 sm:h-4 bg-red-500 rounded-full shadow-lg"></div>
+                            <div class="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-500 rounded-full shadow-lg"></div>
+                            <div class="w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full shadow-lg"></div>
+                        </div>
+                        <div class="ml-4 sm:ml-6 text-gray-400 font-mono font-medium text-sm sm:text-base">developer.js</div>
+                    </div>
+                    <div class="font-mono text-sm sm:text-base leading-relaxed" id="code-content">
+                        <div class="text-purple-400 font-semibold">const</div>
+                        <div class="text-accent-cyan ml-2 sm:ml-4 font-semibold">developer = {</div>
+                        <div class="ml-4 sm:ml-8 text-gray-300 break-all">name: <span class="text-green-400 font-medium">"Louay Hassoun"</span>,</div>
+                        <div class="ml-4 sm:ml-8 text-gray-300 break-all">skills: [<span class="text-green-400 font-medium">"React"</span>, <span class="text-green-400 font-medium">"Javascript"</span>, <span class="text-green-400 font-medium">"Mobile"</span>],</div>
+                        <div class="ml-4 sm:ml-8 text-gray-300 break-all">passion: <span class="text-green-400 font-medium">"Building Amazing Apps"</span>,</div>
+                        <div class="ml-4 sm:ml-8 text-gray-300">available: <span class="text-orange-400 font-semibold">true</span></div>
+                        <div class="text-accent-cyan font-semibold">};</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-12 sm:py-16 lg:py-20 bg-code-blue-light">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12 sm:mb-16 section-fade">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">About <span class="text-accent-blue">CodeByLouay</span></h2>
+                <p class="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">Passionate about creating digital solutions that make a difference</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div class="text-center p-4 sm:p-6 section-fade service-card rounded-xl">
+                    <div class="text-3xl sm:text-4xl mb-4">🚀</div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">Fast Development</h3>
+                    <p class="text-gray-300 text-sm sm:text-base mb-4">Quick turnaround times without compromising on quality or functionality.</p>
+                    <div class="skill-item mt-4" data-skill="95">
+                        <div class="text-sm text-gray-400 mb-2">Speed: 95%</div>
+                        <div class="bg-gray-700 rounded-full h-2">
+                            <div class="skill-progress" style="--progress: 95%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center p-4 sm:p-6 section-fade service-card rounded-xl">
+                    <div class="text-3xl sm:text-4xl mb-4">💡</div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">Innovative Solutions</h3>
+                    <p class="text-gray-300 text-sm sm:text-base mb-4">Creative approaches to solve complex problems with modern technologies.</p>
+                    <div class="skill-item mt-4" data-skill="92">
+                        <div class="text-sm text-gray-400 mb-2">Innovation: 92%</div>
+                        <div class="bg-gray-700 rounded-full h-2">
+                            <div class="skill-progress" style="--progress: 92%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center p-4 sm:p-6 section-fade service-card rounded-xl sm:col-span-2 lg:col-span-1">
+                    <div class="text-3xl sm:text-4xl mb-4">🎯</div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">Client-Focused</h3>
+                    <p class="text-gray-300 text-sm sm:text-base mb-4">Your success is my priority. I work closely with you every step of the way.</p>
+                    <div class="skill-item mt-4" data-skill="98">
+                        <div class="text-sm text-gray-400 mb-2">Satisfaction: 98%</div>
+                        <div class="bg-gray-700 rounded-full h-2">
+                            <div class="skill-progress" style="--progress: 98%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills & Technologies Section -->
+    <section id="skills" class="py-12 sm:py-16 lg:py-20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12 sm:mb-16 section-fade">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">Skills & <span class="text-accent-blue">Technologies</span></h2>
+                <p class="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">Expertise across the full development stack</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div class="glass-effect p-6 rounded-xl section-fade">
+                    <h3 class="text-xl font-semibold mb-6 text-accent-cyan">Frontend</h3>
+                    <div class="space-y-4">
+                        <div class="skill-item" data-skill="95">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">⚛️ React</span>
+                                <span class="text-sm text-gray-400">95%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 95%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item" data-skill="96">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">🟨 JavaScript</span>
+                                <span class="text-sm text-gray-400">96%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 96%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item" data-skill="98">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">🎨 HTML/CSS</span>
+                                <span class="text-sm text-gray-400">98%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 98%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-effect p-6 rounded-xl section-fade">
+                    <h3 class="text-xl font-semibold mb-6 text-accent-cyan">Backend</h3>
+                    <div class="space-y-4">
+                        <div class="skill-item" data-skill="93">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">🟢 Node.js</span>
+                                <span class="text-sm text-gray-400">93%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 93%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item" data-skill="90">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">💜 C#</span>
+                                <span class="text-sm text-gray-400">90%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item" data-skill="88">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">🐍 Python/Django</span>
+                                <span class="text-sm text-gray-400">88%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 88%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-effect p-6 rounded-xl section-fade">
+                    <h3 class="text-xl font-semibold mb-6 text-accent-cyan">Mobile & Cloud</h3>
+                    <div class="space-y-4">
+                        <div class="skill-item" data-skill="94">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">📱 Flutter</span>
+                                <span class="text-sm text-gray-400">94%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 94%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item" data-skill="92">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">🔥 Firebase</span>
+                                <span class="text-sm text-gray-400">92%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 92%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item" data-skill="90">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium">🌐 REST APIs</span>
+                                <span class="text-sm text-gray-400">90%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="skill-progress" style="--progress: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Projects Section -->
+    <section id="projects" class="py-12 sm:py-16 lg:py-20 bg-code-blue-light">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12 sm:mb-16 section-fade">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">Featured <span class="text-accent-blue">Projects</span></h2>
+                <p class="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">Showcasing my best work and innovative solutions</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div class="project-card glass-effect rounded-xl overflow-hidden section-fade">
+                    <div class="h-48 bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                        <div class="text-6xl">🚚</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-3">BiTari2ak - Delivery App</h3>
+                        <p class="text-gray-300 text-sm mb-4">Complete delivery platform with mobile app, admin dashboard, real-time messaging, chatbot integration, and seamless order management system.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded">Flutter</span>
+                            <span class="px-2 py-1 bg-orange-500/20 text-orange-400 text-xs rounded">Firebase</span>
+                            <span class="px-2 py-1 bg-accent-blue/20 text-accent-blue text-xs rounded">React</span>
+                            <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded">Node.js</span>
+                        </div>
+                        <button onclick="openProjectDemo('bitari2ak')" class="interactive-btn w-full bg-orange-500 hover:bg-orange-500/80 px-4 py-2 rounded-lg font-semibold transition-all duration-300">
+                            View Demo
+                        </button>
+                    </div>
+                </div>
+                <div class="project-card glass-effect rounded-xl overflow-hidden section-fade">
+                    <div class="h-48 bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                        <div class="text-6xl">🏪</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-3">POS System</h3>
+                        <p class="text-gray-300 text-sm mb-4">Professional Point of Sale desktop application with admin dashboard, order management, category organization, and modern UI built with C# and MySQL.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded">C#</span>
+                            <span class="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded">MySQL</span>
+                            <span class="px-2 py-1 bg-gray-500/20 text-gray-400 text-xs rounded">WinForms</span>
+                        </div>
+                        <button onclick="openProjectDemo('pos')" class="interactive-btn w-full bg-purple-500 hover:bg-purple-500/80 px-4 py-2 rounded-lg font-semibold transition-all duration-300">
+                            View Demo
+                        </button>
+                    </div>
+                </div>
+                <div class="project-card glass-effect rounded-xl overflow-hidden section-fade">
+                    <div class="h-48 bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center">
+                        <div class="text-6xl">🍽️</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-3">Digital Restaurant Menu</h3>
+                        <p class="text-gray-300 text-sm mb-4">Interactive digital menu system with admin dashboard, search functionality, category filtering, and responsive design for restaurants.</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-2 py-1 bg-orange-500/20 text-orange-400 text-xs rounded">HTML</span>
+                            <span class="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded">CSS</span>
+                            <span class="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded">JavaScript</span>
+                        </div>
+                        <button onclick="openProjectDemo('menu')" class="interactive-btn w-full bg-green-500 hover:bg-green-500/80 px-4 py-2 rounded-lg font-semibold transition-all duration-300">
+                            View Demo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Timeline Section -->
+    <section id="experience" class="py-12 sm:py-16 lg:py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12 sm:mb-16 section-fade">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">Professional <span class="text-accent-blue">Experience</span></h2>
+                <p class="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">My journey in software development</p>
+            </div>
+            <div class="relative">
+                <div class="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-0.5 h-full bg-gradient-to-b from-accent-blue to-accent-cyan"></div>
+                
+                <div class="timeline-item mb-8 md:mb-12 relative">
+                    <div class="absolute left-2 md:left-1/2 transform md:-translate-x-1/2 w-4 h-4 bg-accent-blue rounded-full border-4 border-code-blue"></div>
+                    <div class="ml-12 md:ml-0 md:w-1/2 md:pr-8">
+                        <div class="glass-effect p-6 rounded-xl">
+                            <div class="text-accent-cyan font-semibold mb-2">2024 - Present</div>
+                            <h3 class="text-xl font-bold mb-2">Freelance Full-Stack Developer</h3>
+                            <div class="text-gray-400 mb-3">CodeByLouay</div>
+                            <p class="text-gray-300 text-sm">Building custom web and mobile applications for clients worldwide. Specializing in Flutter and web development with a focus on delivering high-quality, scalable solutions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Fun Facts Section -->
+    <section class="py-12 sm:py-16 lg:py-20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12 sm:mb-16 section-fade">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">Fun <span class="text-accent-blue">Facts</span></h2>
+                <p class="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">Some impressive numbers from my journey</p>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+                <div class="text-center section-fade">
+                    <div class="glass-effect p-6 rounded-xl">
+                        <div class="text-3xl sm:text-4xl font-bold text-accent-blue mb-2 counter" data-target="6">0</div>
+                        <div class="text-gray-300 font-medium">Projects Completed</div>
+                    </div>
+                </div>
+                <div class="text-center section-fade">
+                    <div class="glass-effect p-6 rounded-xl">
+                        <div class="text-3xl sm:text-4xl font-bold text-accent-cyan mb-2 counter client-satisfaction" data-target="98">0</div>
+                        <div class="text-gray-300 font-medium">Client Satisfaction</div>
+                    </div>
+                </div>
+                <div class="text-center section-fade">
+                    <div class="glass-effect p-6 rounded-xl">
+                        <div class="text-3xl sm:text-4xl font-bold text-accent-blue mb-2 counter" data-target="1">0</div>
+                        <div class="text-gray-300 font-medium">Year Freelancing</div>
+                    </div>
+                </div>
+                <div class="text-center section-fade">
+                    <div class="glass-effect p-6 rounded-xl">
+                        <div class="text-3xl sm:text-4xl font-bold text-accent-cyan mb-2 counter" data-target="24">0</div>
+                        <div class="text-gray-300 font-medium">Hours Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Services Section -->
+    <section id="services" class="py-12 sm:py-16 lg:py-20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12 sm:mb-16 section-fade">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">My <span class="text-accent-blue">Services</span></h2>
+                <p class="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">Comprehensive development solutions for your business needs</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-6 sm:gap-8">
+                <div class="service-card bg-code-blue-light p-6 sm:p-8 rounded-xl border border-slate-700 section-fade">
+                    <div class="text-3xl sm:text-4xl mb-4">🌐</div>
+                    <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-accent-cyan">Web Development</h3>
+                    <p class="text-gray-300 mb-6 text-sm sm:text-base">Custom websites and web applications built with modern frameworks like React, Vue, and Node.js. Responsive, fast, and SEO-optimized.</p>
+                    <ul class="text-sm text-gray-400 space-y-2 mb-6">
+                        <li>• Frontend Development (React, Javascript)</li>
+                        <li>• Backend Development (Node.js, PHP)</li>
+                        <li>• Database Design & Integration</li>
+                        <li>• API Development & Integration</li>
+                    </ul>
+                    <button onclick="openServiceModal('web')" class="interactive-btn w-full sm:w-auto bg-accent-blue hover:bg-accent-blue/80 px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        Learn More
+                    </button>
+                </div>
+                <div class="service-card bg-code-blue-light p-6 sm:p-8 rounded-xl border border-slate-700 section-fade">
+                    <div class="text-3xl sm:text-4xl mb-4">📱</div>
+                    <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-accent-cyan">Mobile Development</h3>
+                    <p class="text-gray-300 mb-6 text-sm sm:text-base">Native and cross-platform mobile applications for iOS and Android. User-friendly interfaces with smooth performance.</p>
+                    <ul class="text-sm text-gray-400 space-y-2 mb-6">
+                        <li>• Flutter Development</li>
+                        <li>• App Store Deployment</li>
+                    </ul>
+                    <button onclick="openServiceModal('mobile')" class="interactive-btn w-full sm:w-auto bg-accent-cyan hover:bg-accent-cyan/80 px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-12 sm:py-16 lg:py-20 bg-code-blue-light">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-12 sm:mb-16 section-fade">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">Let's Build Something <span class="text-accent-blue">Amazing</span></h2>
+                <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto">Ready to turn your idea into reality? Let's discuss your project!</p>
+            </div>
+            <div class="glass-effect p-6 sm:p-8 lg:p-10 rounded-2xl sm:rounded-3xl section-fade">
+                <form id="contact-form" class="space-y-6 sm:space-y-8">
+                    <div class="grid sm:grid-cols-2 gap-6 sm:gap-8">
+                        <div>
+                            <label class="block text-sm font-semibold mb-3 text-gray-300">Name</label>
+                            <input type="text" required class="w-full modern-input rounded-xl px-4 sm:px-6 py-3 sm:py-4 text-white placeholder-gray-400 focus:outline-none text-sm sm:text-base">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-3 text-gray-300">Email</label>
+                            <input type="email" required class="w-full modern-input rounded-xl px-4 sm:px-6 py-3 sm:py-4 text-white placeholder-gray-400 focus:outline-none text-sm sm:text-base">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-3 text-gray-300">Project Type</label>
+                        <select class="w-full modern-input rounded-xl px-4 sm:px-6 py-3 sm:py-4 text-white focus:outline-none text-sm sm:text-base">
+                            <option value="">Select project type...</option>
+                            <option>Web Application</option>
+                            <option>Mobile App</option>
+                            <option>Both Web & Mobile</option>
+                            <option>Consultation</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-3 text-gray-300">Project Details</label>
+                        <textarea rows="5" sm:rows="6" required class="w-full modern-input rounded-xl px-4 sm:px-6 py-3 sm:py-4 text-white placeholder-gray-400 focus:outline-none resize-none text-sm sm:text-base" placeholder="Tell me about your project vision, goals, and requirements..."></textarea>
+                    </div>
+                    <button type="submit" class="interactive-btn w-full bg-gradient-to-r from-accent-blue to-accent-cyan text-white py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 glow-effect">
+                        Send Message 🚀
+                    </button>
+                </form>
+                <div class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-700 text-center">
+                    <p class="text-gray-300 mb-4 text-sm sm:text-base">Or reach out directly:</p>
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
+                        <a href="mailto:louayhassoun91@gmail.com" class="text-accent-cyan hover:text-accent-blue transition-colors text-sm sm:text-base break-all">
+                            📧 louayhassoun91@gmail.com
+                        </a>
+                        <a href="tel:+96176447238" class="text-accent-cyan hover:text-accent-blue transition-colors text-sm sm:text-base">
+                            📞 +961 76 447 238
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Demo Modal -->
+    <div id="project-modal" class="modal-overlay">
+        <div class="modal-content w-full max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modal-title" class="text-2xl font-bold text-white"></h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="modal-body" class="text-gray-300">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Modal -->
+    <div id="service-modal" class="modal-overlay">
+        <div class="modal-content w-full max-w-3xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="service-modal-title" class="text-2xl font-bold text-white"></h3>
+                <button onclick="closeServiceModal()" class="text-gray-400 hover:text-white transition-colors p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="service-modal-body" class="text-gray-300">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8 sm:py-12 border-t border-slate-700">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div class="md:col-span-2">
+                    <div class="font-mono text-accent-cyan mb-4 text-xl sm:text-2xl">&lt;CodeByLouay/&gt;</div>
+                    <p class="text-gray-400 text-sm sm:text-base mb-4">Crafting digital experiences with passion and precision. Let's build something amazing together.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-accent-blue transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-accent-blue transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-accent-blue transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4 text-white">Quick Links</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors">About</a></li>
+                        <li><a href="#projects" class="text-gray-400 hover:text-white transition-colors">Projects</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-white transition-colors">Services</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4 text-white">Services</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><span class="text-gray-400">Web Development</span></li>
+                        <li><span class="text-gray-400">Mobile Apps</span></li>
+                        <li><span class="text-gray-400">UI/UX Design</span></li>
+                        <li><span class="text-gray-400">Consulting</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-700 pt-6 text-center">
+                <p class="text-gray-400 text-sm sm:text-base">© 2024 CodeByLouay. Crafting digital experiences with passion.</p>
+            </div>
+        </div>
+    </footer>
+
+   <script src="port.js"></script>
+       
+</html>
