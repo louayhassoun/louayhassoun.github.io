@@ -121,7 +121,7 @@
        const terminalCommands = {
     help: 'Available commands: about, skills, projects, contact, clear, whoami',
     about: 'Louay Hassoun - Full-Stack Developer specializing in modern web and mobile applications.',
-    skills: 'React, Node.js, Flutter, JavaScript, HTML/CSS, Python/Django,PHP, Firebase, REST APIs',
+    skills: 'React, Node.js, Flutter, JavaScript, HTML/CSS, Python/Django, PHP, Java, C#, C/C++, Firebase, REST APIs',
     projects: 'Recent projects: BiTari2ak Delivery App, Professional POS System, Digital Restaurant Menu',
     contact: 'Email: louayhassoun91@gmail.com | Phone: +961 76 447 238',
     whoami: 'louay',
@@ -812,26 +812,7 @@ function createNewInputLine() {
                                     </div>
                                 </div>
                             </div>
-                            <div class="bg-gradient-to-r from-accent-blue/10 to-accent-cyan/10 p-6 rounded-lg border border-accent-blue/20">
-                                <h4 class="text-lg font-semibold mb-3 text-accent-cyan">💰 Pricing & Timeline</h4>
-                                <div class="grid md:grid-cols-3 gap-4 text-sm">
-                                    <div class="text-center">
-                                        <div class="font-semibold text-accent-blue">Basic Website</div>
-                                        <div class="text-2xl font-bold my-2">$120+</div>
-                                        <div class="text-gray-400">5-7 pages, responsive design, 1 weeks</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="font-semibold text-accent-cyan">Web Application</div>
-                                        <div class="text-2xl font-bold my-2">$300+</div>
-                                        <div class="text-gray-400">Custom features, database, 4-6 weeks</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="font-semibold text-purple-400">Enterprise Solution</div>
-                                        <div class="text-2xl font-bold my-2">$800+</div>
-                                        <div class="text-gray-400">Complex systems, 8-12 weeks</div>
-                                    </div>
-                                </div>
-                            </div>
+                           
                             <div class="text-center">
                                 <button onclick="scrollToSection('contact'); closeServiceModal();" class="bg-accent-blue hover:bg-accent-blue/80 px-8 py-3 rounded-lg font-semibold transition-all duration-300 mr-4">
                                     Start Your Project
@@ -910,26 +891,7 @@ function createNewInputLine() {
                                     </div>
                                 </div>
                             </div>
-                            <div class="bg-gradient-to-r from-accent-cyan/10 to-purple-500/10 p-6 rounded-lg border border-accent-cyan/20">
-                                <h4 class="text-lg font-semibold mb-3 text-accent-cyan">💰 Pricing & Timeline</h4>
-                                <div class="grid md:grid-cols-3 gap-4 text-sm">
-                                    <div class="text-center">
-                                        <div class="font-semibold text-accent-cyan">Simple App</div>
-                                        <div class="text-2xl font-bold my-2">$600+</div>
-                                        <div class="text-gray-400">Basic features, 2 weeks</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="font-semibold text-purple-400">Feature-Rich App</div>
-                                        <div class="text-2xl font-bold my-2">$1,200+</div>
-                                        <div class="text-gray-400">Advanced features, 6-8 weeks</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="font-semibold text-orange-400">Enterprise App</div>
-                                        <div class="text-2xl font-bold my-2">$2,500+</div>
-                                        <div class="text-gray-400">Complex systems, 10-16 weeks</div>
-                                    </div>
-                                </div>
-                            </div>
+                           
                             <div class="text-center">
                                 <button onclick="scrollToSection('contact'); closeServiceModal();" class="bg-accent-cyan hover:bg-accent-cyan/80 px-8 py-3 rounded-lg font-semibold transition-all duration-300 mr-4">
                                     Start Your App
