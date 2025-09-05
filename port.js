@@ -777,7 +777,7 @@ function createNewInputLine() {
                                 <div class="grid md:grid-cols-3 gap-4 text-sm">
                                     <div class="text-center">
                                         <div class="font-semibold text-accent-blue">Basic Website</div>
-                                        <div class="text-2xl font-bold my-2">$100+</div>
+                                        <div class="text-2xl font-bold my-2">$120+</div>
                                         <div class="text-gray-400">5-7 pages, responsive design, 1 weeks</div>
                                     </div>
                                     <div class="text-center">
@@ -876,7 +876,7 @@ function createNewInputLine() {
                                     <div class="text-center">
                                         <div class="font-semibold text-accent-cyan">Simple App</div>
                                         <div class="text-2xl font-bold my-2">$600+</div>
-                                        <div class="text-gray-400">Basic features, 3-4 weeks</div>
+                                        <div class="text-gray-400">Basic features, 2 weeks</div>
                                     </div>
                                     <div class="text-center">
                                         <div class="font-semibold text-purple-400">Feature-Rich App</div>
