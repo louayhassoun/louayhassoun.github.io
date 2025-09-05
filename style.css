@@ -428,3 +428,26 @@ html, body {
                 padding: 1rem;
               }
             }
+            /* Make sure everything fits inside the viewport */
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Default for all sections */
+section {
+  width: 100%;
+  max-width: 1200px; /* adjust to your design */
+  margin: 0 auto;    /* center it */
+  box-sizing: border-box;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+section .container {
+  width: 100%;
+  max-width: 1200px; /* adjust to your design */
+  margin: 0 auto;    /* center it */
+  box-sizing: border-box;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
