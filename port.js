@@ -280,25 +280,65 @@ function createNewInputLine() {
         });
 
         // Form submission
-        document.getElementById('contact-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const name = this.querySelector('input[type="text"]').value;
-            const email = this.querySelector('input[type="email"]').value;
-            const projectType = this.querySelector('select').value;
-            
-            // Animate button
-            const button = this.querySelector('button[type="submit"]');
-            button.innerHTML = 'Sending... 🚀';
-            button.style.background = 'linear-gradient(45deg, #06b6d4, #3b82f6)';
-            
-            setTimeout(() => {
-                alert(`Thank you ${name}! Your message has been received. I'll get back to you soon about your ${projectType.toLowerCase()} project.`);
-                button.innerHTML = 'Send Message 🚀';
-                button.style.background = 'linear-gradient(to right, #3b82f6, #06b6d4)';
-                this.reset();
-            }, 1500);
-        });
+   document.getElementById('contact-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const name = this.querySelector('input[type="text"]').value;
+    const email = this.querySelector('input[type="email"]').value;
+    const projectType = this.querySelector('select').value;
+    const details = this.querySelector('textarea').value;
+
+    const button = document.getElementById('send-btn');
+    const rocket = document.getElementById('rocket');
+    const rocketFire = document.getElementById('rocket-fire');
+
+    const originalContent = button.innerHTML;
+    
+    // Disable button & show rocket animation
+    button.disabled = true;
+    button.style.opacity = '0.8';
+    rocket.style.display = 'inline-block';
+    rocket.classList.add('animate');
+    rocketFire.classList.add('fire-animate');
+    button.innerHTML = 'Launching... ' + rocket.outerHTML;
+
+    // Send email using EmailJS
+    emailjs.send("service_f6m97d4", "template_4zgye8e", {
+        name: name,
+        email: email,
+        projectType: projectType,
+        details: details
+    })
+    .then(function(response) {
+        console.log('SUCCESS!', response.status, response.text);
+
+        // Reset button after animation
+        setTimeout(() => {
+            rocket.classList.remove('animate');
+            rocketFire.classList.remove('fire-animate');
+            button.innerHTML = originalContent;
+            button.disabled = false;
+            button.style.opacity = '1';
+            document.getElementById('contact-form').reset();
+            alert("Message sent successfully! 🚀");
+        }, 1500);
+    }, function(error) {
+        console.log('FAILED...', error);
+        alert("Oops! Something went wrong.");
+        rocket.classList.remove('animate');
+        rocketFire.classList.remove('fire-animate');
+        button.innerHTML = originalContent;
+        button.disabled = false;
+        button.style.opacity = '1';
+    });
+});
+
+
+
+
+
+
+
 
         // Scroll Reveal Animation
         function revealOnScroll() {

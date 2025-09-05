@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -526,9 +527,25 @@
                         <label class="block text-sm font-semibold mb-3 text-gray-300">Project Details</label>
                         <textarea rows="5" sm:rows="6" required class="w-full modern-input rounded-xl px-4 sm:px-6 py-3 sm:py-4 text-white placeholder-gray-400 focus:outline-none resize-none text-sm sm:text-base" placeholder="Tell me about your project vision, goals, and requirements..."></textarea>
                     </div>
-                    <button type="submit" class="interactive-btn w-full bg-gradient-to-r from-accent-blue to-accent-cyan text-white py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 glow-effect">
-                        Send Message 
-                    </button>
+                    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+                        <script>
+                        emailjs.init("yXJ31JzokPriGJCy_"); 
+                        </script>
+
+                 <button id="send-btn" type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-4 rounded-2xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 glow-effect relative">
+                Send Message
+                <svg id="rocket" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block ml-2" style="display:none;">
+                    <path id="rocket-fire" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" fill="#ff6b35"/>
+                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+                </svg>
+            </button>
+
+
+
+
+
                 </form>
                 <div class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-700 text-center">
                     <p class="text-gray-300 mb-4 text-sm sm:text-base">Or reach out directly:</p>
