@@ -370,3 +370,61 @@ html, body {
             border-radius: 12px;
             background: #fff;
         }
+      
+
+            /* Medium screens: tablets */
+            @media (max-width: 768px) {
+              /* Reduce heading size */
+              h1, h2, h3 {
+                font-size: 90%;
+              }
+          
+              /* Make nav stack vertically */
+              .nav ul {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+              }
+          
+              /* Adjust section padding */
+              section {
+                padding: 40px 20px;
+              }
+          
+              /* Make grids become 1 column */
+              .projects-grid,
+              .services-grid,
+              .skills-grid {
+                grid-template-columns: 1fr !important;
+              }
+          
+              /* Make terminal smaller */
+              .terminal-window {
+                width: 95%;
+                height: 300px;
+                left: 50%;
+                transform: translateX(-50%);
+              }
+            }
+            
+            /* Small screens: phones */
+            @media (max-width: 480px) {
+              h1, h2, h3 {
+                font-size: 80%;
+              }
+          
+              .code-block {
+                font-size: 0.85rem;
+                padding: 10px;
+              }
+          
+              .service-card,
+              .project-card,
+              .blog-card {
+                margin-bottom: 1rem;
+              }
+          
+              .modal-content {
+                padding: 1rem;
+              }
+            }
