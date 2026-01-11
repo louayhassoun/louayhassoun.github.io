@@ -4,8 +4,8 @@ export function openProjectDemo(projectType) {
     const body = document.getElementById('modal-body');
 
     const projects = {
-        bitari2ak: {
-            title: '🚚 BiTari2ak - Delivery App Platform',
+        Dibo: {
+            title: '🚚 Dibo - Delivery App Platform',
             content: '...paste your HTML content here...'
         },
         pos: { title: '🏪 Professional POS System', content: '...' },

@@ -1,128 +1,128 @@
- class FloatingCodeSystem {
-            constructor() {
-                this.canvas = document.getElementById('particles-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.codeElements = [];
-                this.mouse = { x: 0, y: 0 };
-                
-                // Code symbols and elements to float
-                this.symbols = [
-                    '{ }', '< >', '[ ]', '( )', 
-                    '</>', '<div>', 'const', 'let', 'var',
-                    '=>', '===', '!==', '&&', '||',
-                    'function', 'return', 'if', 'else',
-                    'React', 'Node', 'JS', 'CSS', 'HTML',
-                    '💻', '⚡', '🚀', '🔥', '✨', '🎯'
-                ];
-                
-                this.resize();
-                this.init();
-                this.animate();
-                
-                window.addEventListener('resize', () => this.resize());
-                window.addEventListener('mousemove', (e) => {
-                    this.mouse.x = e.clientX;
-                    this.mouse.y = e.clientY;
-                });
-            }
-            
-            resize() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            }
-            
-            init() {
-                for (let i = 0; i < 30; i++) {
-                    this.codeElements.push({
-                        x: Math.random() * this.canvas.width,
-                        y: Math.random() * this.canvas.height,
-                        vx: (Math.random() - 0.5) * 0.8,
-                        vy: (Math.random() - 0.5) * 0.8,
-                        symbol: this.symbols[Math.floor(Math.random() * this.symbols.length)],
-                        size: Math.random() * 8 + 12,
-                        color: ['#3b82f6', '#06b6d4', '#8b5cf6', '#10b981'][Math.floor(Math.random() * 4)],
-                        rotation: Math.random() * 360,
-                        rotationSpeed: (Math.random() - 0.5) * 2,
-                        opacity: Math.random() * 0.6 + 0.3
-                    });
-                }
-            }
-            
-            animate() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                this.codeElements.forEach(element => {
-                    // Mouse interaction - gentle repulsion
-                    const dx = this.mouse.x - element.x;
-                    const dy = this.mouse.y - element.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < 120) {
-                        const force = (120 - distance) / 120;
-                        element.vx -= dx * force * 0.0008;
-                        element.vy -= dy * force * 0.0008;
-                    }
-                    
-                    // Update position
-                    element.x += element.vx;
-                    element.y += element.vy;
-                    element.rotation += element.rotationSpeed;
-                    
-                    // Boundary check with wrapping
-                    if (element.x < -50) element.x = this.canvas.width + 50;
-                    if (element.x > this.canvas.width + 50) element.x = -50;
-                    if (element.y < -50) element.y = this.canvas.height + 50;
-                    if (element.y > this.canvas.height + 50) element.y = -50;
-                    
-                    // Draw code element
-                    this.ctx.save();
-                    this.ctx.translate(element.x, element.y);
-                    this.ctx.rotate(element.rotation * Math.PI / 180);
-                    
-                    // Set styles
-                    this.ctx.fillStyle = element.color;
-                    this.ctx.globalAlpha = element.opacity;
-                    this.ctx.font = `${element.size}px 'JetBrains Mono', monospace`;
-                    this.ctx.textAlign = 'center';
-                    this.ctx.textBaseline = 'middle';
-                    
-                    // Add glow effect
-                    this.ctx.shadowBlur = 8;
-                    this.ctx.shadowColor = element.color;
-                    
-                    // Draw the symbol
-                    this.ctx.fillText(element.symbol, 0, 0);
-                    
-                    this.ctx.restore();
-                });
-                
-                requestAnimationFrame(() => this.animate());
-            }
-        }
-        
-        // Cursor Trail Effect
-        let cursorTrail = [];
-        document.addEventListener('mousemove', (e) => {
-            cursorTrail.push({ x: e.clientX, y: e.clientY, life: 20 });
-            
-            if (cursorTrail.length > 10) {
-                cursorTrail.shift();
-            }
-            
-            const trail = document.getElementById('cursor-trail');
-            if (cursorTrail.length > 0) {
-                const latest = cursorTrail[cursorTrail.length - 1];
-                trail.style.left = latest.x - 10 + 'px';
-                trail.style.top = latest.y - 10 + 'px';
-            }
+class FloatingCodeSystem {
+    constructor() {
+        this.canvas = document.getElementById('particles-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.codeElements = [];
+        this.mouse = { x: 0, y: 0 };
+
+        // Code symbols and elements to float
+        this.symbols = [
+            '{ }', '< >', '[ ]', '( )',
+            '</>', '<div>', 'const', 'let', 'var',
+            '=>', '===', '!==', '&&', '||',
+            'function', 'return', 'if', 'else',
+            'React', 'Node', 'JS', 'CSS', 'HTML',
+            '💻', '⚡', '🚀', '🔥', '✨', '🎯'
+        ];
+
+        this.resize();
+        this.init();
+        this.animate();
+
+        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('mousemove', (e) => {
+            this.mouse.x = e.clientX;
+            this.mouse.y = e.clientY;
         });
-        
-        // Terminal Commands
-       const terminalCommands = {
+    }
+
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+
+    init() {
+        for (let i = 0; i < 30; i++) {
+            this.codeElements.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                vx: (Math.random() - 0.5) * 0.8,
+                vy: (Math.random() - 0.5) * 0.8,
+                symbol: this.symbols[Math.floor(Math.random() * this.symbols.length)],
+                size: Math.random() * 8 + 12,
+                color: ['#3b82f6', '#06b6d4', '#8b5cf6', '#10b981'][Math.floor(Math.random() * 4)],
+                rotation: Math.random() * 360,
+                rotationSpeed: (Math.random() - 0.5) * 2,
+                opacity: Math.random() * 0.6 + 0.3
+            });
+        }
+    }
+
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.codeElements.forEach(element => {
+            // Mouse interaction - gentle repulsion
+            const dx = this.mouse.x - element.x;
+            const dy = this.mouse.y - element.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 120) {
+                const force = (120 - distance) / 120;
+                element.vx -= dx * force * 0.0008;
+                element.vy -= dy * force * 0.0008;
+            }
+
+            // Update position
+            element.x += element.vx;
+            element.y += element.vy;
+            element.rotation += element.rotationSpeed;
+
+            // Boundary check with wrapping
+            if (element.x < -50) element.x = this.canvas.width + 50;
+            if (element.x > this.canvas.width + 50) element.x = -50;
+            if (element.y < -50) element.y = this.canvas.height + 50;
+            if (element.y > this.canvas.height + 50) element.y = -50;
+
+            // Draw code element
+            this.ctx.save();
+            this.ctx.translate(element.x, element.y);
+            this.ctx.rotate(element.rotation * Math.PI / 180);
+
+            // Set styles
+            this.ctx.fillStyle = element.color;
+            this.ctx.globalAlpha = element.opacity;
+            this.ctx.font = `${element.size}px 'JetBrains Mono', monospace`;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+
+            // Add glow effect
+            this.ctx.shadowBlur = 8;
+            this.ctx.shadowColor = element.color;
+
+            // Draw the symbol
+            this.ctx.fillText(element.symbol, 0, 0);
+
+            this.ctx.restore();
+        });
+
+        requestAnimationFrame(() => this.animate());
+    }
+}
+
+// Cursor Trail Effect
+let cursorTrail = [];
+document.addEventListener('mousemove', (e) => {
+    cursorTrail.push({ x: e.clientX, y: e.clientY, life: 20 });
+
+    if (cursorTrail.length > 10) {
+        cursorTrail.shift();
+    }
+
+    const trail = document.getElementById('cursor-trail');
+    if (cursorTrail.length > 0) {
+        const latest = cursorTrail[cursorTrail.length - 1];
+        trail.style.left = latest.x - 10 + 'px';
+        trail.style.top = latest.y - 10 + 'px';
+    }
+});
+
+// Terminal Commands
+const terminalCommands = {
     help: 'Available commands: about, skills, projects, contact, clear, whoami',
     about: 'Louay Hassoun - Full-Stack Developer specializing in modern web and mobile applications.',
     skills: 'React, Node.js, Flutter, JavaScript, HTML/CSS, Python/Django, PHP, Java, C#, C/C++, Firebase, REST APIs',
-    projects: 'Recent projects: BiTari2ak Delivery App, Professional POS System, Digital Restaurant Menu',
+    projects: 'Recent projects: Dibo Delivery App, Professional POS System, Digital Restaurant Menu',
     contact: 'Email: louayhassoun91@gmail.com | Phone: +961 76 447 238',
     whoami: 'louay',
     clear: 'CLEAR'
@@ -181,119 +181,194 @@ function createNewInputLine() {
     });
 }
 
-        // Typing Animation
-        const texts = ['Full-Stack Developer', 'Web Developer', 'Mobile Developer', 'Problem Solver', 'Code Architect'];
-        let textIndex = 0;
-        let charIndex = 0;
-        let isDeleting = false;
-        
-        function typeText() {
-            const element = document.getElementById('typing-text');
-            const currentText = texts[textIndex];
-            
-            if (isDeleting) {
-                element.textContent = currentText.substring(0, charIndex - 1);
-                charIndex--;
-            } else {
-                element.textContent = currentText.substring(0, charIndex + 1);
-                charIndex++;
-            }
-            
-            if (!isDeleting && charIndex === currentText.length) {
-                setTimeout(() => isDeleting = true, 2000);
-            } else if (isDeleting && charIndex === 0) {
-                isDeleting = false;
-                textIndex = (textIndex + 1) % texts.length;
-            }
-            
-            setTimeout(typeText, isDeleting ? 50 : 100);
-        }
-        
-        // Code Block Animation
-        function animateCode() {
-            const codeContent = document.getElementById('code-content');
-            codeContent.style.transform = 'scale(1.05)';
-            codeContent.style.filter = 'brightness(1.2)';
-            
-            setTimeout(() => {
-                codeContent.style.transform = 'scale(1)';
-                codeContent.style.filter = 'brightness(1)';
-            }, 200);
-        }
-        
-        // Smooth scrolling
-        function scrollToSection(sectionId) {
-            document.getElementById(sectionId).scrollIntoView({
-                behavior: 'smooth'
-            });
-        }
+// Typing Animation
+const texts = ['Full-Stack Developer', 'Web Developer', 'Mobile Developer', 'Problem Solver', 'Code Architect'];
+let textIndex = 0;
+let charIndex = 0;
+let isDeleting = false;
 
-        // Mobile Menu Functions
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuIcon = document.getElementById('menu-icon');
-            const closeIcon = document.getElementById('close-icon');
-            const isOpen = !mobileMenu.classList.contains('-translate-y-full');
-            
-            if (isOpen) {
-                closeMobileMenu();
-            } else {
-                openMobileMenu();
-            }
-        }
-        
-        function openMobileMenu() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuIcon = document.getElementById('menu-icon');
-            const closeIcon = document.getElementById('close-icon');
-            
-            mobileMenu.classList.remove('-translate-y-full', 'opacity-0', 'invisible');
-            mobileMenu.classList.add('translate-y-0', 'opacity-100', 'visible');
-            menuIcon.classList.add('hidden');
-            closeIcon.classList.remove('hidden');
-        }
-        
-        function closeMobileMenu() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuIcon = document.getElementById('menu-icon');
-            const closeIcon = document.getElementById('close-icon');
-            
-            mobileMenu.classList.add('-translate-y-full', 'opacity-0', 'invisible');
-            mobileMenu.classList.remove('translate-y-0', 'opacity-100', 'visible');
-            menuIcon.classList.remove('hidden');
-            closeIcon.classList.add('hidden');
-        }
-        
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
-        
-        // Close mobile menu when clicking on nav links
-        document.querySelectorAll('.mobile-nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href').substring(1);
-                closeMobileMenu();
-                setTimeout(() => {
-                    scrollToSection(targetId);
-                }, 300);
-            });
-        });
+function typeText() {
+    const element = document.getElementById('typing-text');
+    const currentText = texts[textIndex];
 
-        // Form submission
-   document.getElementById('contact-form').addEventListener('submit', function(e) {
+    if (isDeleting) {
+        element.textContent = currentText.substring(0, charIndex - 1);
+        charIndex--;
+    } else {
+        element.textContent = currentText.substring(0, charIndex + 1);
+        charIndex++;
+    }
+
+    if (!isDeleting && charIndex === currentText.length) {
+        setTimeout(() => isDeleting = true, 2000);
+    } else if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        textIndex = (textIndex + 1) % texts.length;
+    }
+
+    setTimeout(typeText, isDeleting ? 50 : 100);
+}
+
+// Code Block Animation
+function animateCode() {
+    const codeContent = document.getElementById('code-content');
+    codeContent.style.transform = 'scale(1.05)';
+    codeContent.style.filter = 'brightness(1.2)';
+
+    setTimeout(() => {
+        codeContent.style.transform = 'scale(1)';
+        codeContent.style.filter = 'brightness(1)';
+    }, 200);
+}
+
+// Smooth scrolling
+function scrollToSection(sectionId) {
+    document.getElementById(sectionId).scrollIntoView({
+        behavior: 'smooth'
+    });
+}
+
+// Mobile Menu Functions
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+    const closeIcon = document.getElementById('close-icon');
+    const isOpen = !mobileMenu.classList.contains('-translate-y-full');
+
+    if (isOpen) {
+        closeMobileMenu();
+    } else {
+        openMobileMenu();
+    }
+}
+
+function openMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+    const closeIcon = document.getElementById('close-icon');
+
+    mobileMenu.classList.remove('-translate-y-full', 'opacity-0', 'invisible');
+    mobileMenu.classList.add('translate-y-0', 'opacity-100', 'visible');
+    menuIcon.classList.add('hidden');
+    closeIcon.classList.remove('hidden');
+}
+
+function closeMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+    const closeIcon = document.getElementById('close-icon');
+
+    mobileMenu.classList.add('-translate-y-full', 'opacity-0', 'invisible');
+    mobileMenu.classList.remove('translate-y-0', 'opacity-100', 'visible');
+    menuIcon.classList.remove('hidden');
+    closeIcon.classList.add('hidden');
+}
+
+// Mobile menu toggle
+document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+
+// Close mobile menu when clicking on nav links
+document.querySelectorAll('.mobile-nav-link').forEach(link => {
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        closeMobileMenu();
+        setTimeout(() => {
+            scrollToSection(targetId);
+        }, 300);
+    });
+});
+
+// Character counter for textarea
+const detailsTextarea = document.getElementById('project-details');
+const charCount = document.getElementById('char-count');
+if (detailsTextarea && charCount) {
+    detailsTextarea.addEventListener('input', function () {
+        const currentLength = this.value.length;
+        charCount.textContent = `${currentLength}/1000`;
+        if (currentLength > 1000) {
+            charCount.classList.add('text-red-400');
+        } else {
+            charCount.classList.remove('text-red-400');
+        }
+    });
+}
+
+// Form validation
+function validateForm() {
+    let isValid = true;
+    const nameInput = document.getElementById('contact-name');
+    const emailInput = document.getElementById('contact-email');
+    const detailsInput = document.getElementById('project-details');
+    const nameError = document.getElementById('name-error');
+    const emailError = document.getElementById('email-error');
+    const detailsError = document.getElementById('details-error');
+
+    // Reset errors
+    [nameError, emailError, detailsError].forEach(el => {
+        if (el) {
+            el.classList.add('hidden');
+            el.textContent = '';
+        }
+    });
+
+    // Validate name
+    if (!nameInput || nameInput.value.trim().length < 2) {
+        if (nameError) {
+            nameError.textContent = 'Name must be at least 2 characters';
+            nameError.classList.remove('hidden');
+        }
+        isValid = false;
+    }
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailInput || !emailRegex.test(emailInput.value)) {
+        if (emailError) {
+            emailError.textContent = 'Please enter a valid email address';
+            emailError.classList.remove('hidden');
+        }
+        isValid = false;
+    }
+
+    // Validate details
+    if (!detailsInput || detailsInput.value.trim().length < 10) {
+        if (detailsError) {
+            detailsError.textContent = 'Please provide at least 10 characters of project details';
+            detailsError.classList.remove('hidden');
+        }
+        isValid = false;
+    } else if (detailsInput.value.length > 1000) {
+        if (detailsError) {
+            detailsError.textContent = 'Project details must be less than 1000 characters';
+            detailsError.classList.remove('hidden');
+        }
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+// Form submission
+document.getElementById('contact-form').addEventListener('submit', function (e) {
     e.preventDefault();
 
-    const name = this.querySelector('input[type="text"]').value;
-    const email = this.querySelector('input[type="email"]').value;
-    const projectType = this.querySelector('select').value;
-    const details = this.querySelector('textarea').value;
+    // Validate form before submission
+    if (!validateForm()) {
+        return;
+    }
+
+    const name = this.querySelector('#contact-name').value;
+    const email = this.querySelector('#contact-email').value;
+    const projectType = this.querySelector('#project-type').value;
+    const details = this.querySelector('#project-details').value;
 
     const button = document.getElementById('send-btn');
     const rocket = document.getElementById('rocket');
     const rocketFire = document.getElementById('rocket-fire');
 
     const originalContent = button.innerHTML;
-    
+
     // Disable button & show rocket animation
     button.disabled = true;
     button.style.opacity = '0.8';
@@ -309,28 +384,29 @@ function createNewInputLine() {
         projectType: projectType,
         details: details
     })
-    .then(function(response) {
-        console.log('SUCCESS!', response.status, response.text);
+        .then(function (response) {
+            console.log('SUCCESS!', response.status, response.text);
 
-        // Reset button after animation
-        setTimeout(() => {
+            // Reset button after animation
+            setTimeout(() => {
+                rocket.classList.remove('animate');
+                rocketFire.classList.remove('fire-animate');
+                button.innerHTML = originalContent;
+                button.disabled = false;
+                button.style.opacity = '1';
+                document.getElementById('contact-form').reset();
+                if (charCount) charCount.textContent = '0/1000';
+                alert("Message sent successfully! 🚀");
+            }, 1500);
+        }, function (error) {
+            console.log('FAILED...', error);
+            alert("Oops! Something went wrong.");
             rocket.classList.remove('animate');
             rocketFire.classList.remove('fire-animate');
             button.innerHTML = originalContent;
             button.disabled = false;
             button.style.opacity = '1';
-            document.getElementById('contact-form').reset();
-            alert("Message sent successfully! 🚀");
-        }, 1500);
-    }, function(error) {
-        console.log('FAILED...', error);
-        alert("Oops! Something went wrong.");
-        rocket.classList.remove('animate');
-        rocketFire.classList.remove('fire-animate');
-        button.innerHTML = originalContent;
-        button.disabled = false;
-        button.style.opacity = '1';
-    });
+        });
 });
 
 
@@ -340,47 +416,47 @@ function createNewInputLine() {
 
 
 
-        // Scroll Reveal Animation
-        function revealOnScroll() {
-            const reveals = document.querySelectorAll('.section-fade');
-            
-            reveals.forEach(element => {
-                const windowHeight = window.innerHeight;
-                const elementTop = element.getBoundingClientRect().top;
-                const elementVisible = 150;
-                
-                if (elementTop < windowHeight - elementVisible) {
-                    element.classList.add('visible');
-                }
-            });
+// Scroll Reveal Animation
+function revealOnScroll() {
+    const reveals = document.querySelectorAll('.section-fade');
+
+    reveals.forEach(element => {
+        const windowHeight = window.innerHeight;
+        const elementTop = element.getBoundingClientRect().top;
+        const elementVisible = 150;
+
+        if (elementTop < windowHeight - elementVisible) {
+            element.classList.add('visible');
         }
-        
-        // Timeline Animation
-        function animateTimeline() {
-            const timelineItems = document.querySelectorAll('.timeline-item');
-            
-            timelineItems.forEach(item => {
-                const rect = item.getBoundingClientRect();
-                if (rect.top < window.innerHeight && rect.bottom > 0) {
-                    item.classList.add('visible');
-                }
-            });
+    });
+}
+
+// Timeline Animation
+function animateTimeline() {
+    const timelineItems = document.querySelectorAll('.timeline-item');
+
+    timelineItems.forEach(item => {
+        const rect = item.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            item.classList.add('visible');
         }
-        
-        // Skill Bar Animation
-        function animateSkillBars() {
-            const skillItems = document.querySelectorAll('.skill-item');
-            
-            skillItems.forEach(item => {
-                const rect = item.getBoundingClientRect();
-                if (rect.top < window.innerHeight && rect.bottom > 0) {
-                    item.classList.add('animate');
-                }
-            });
+    });
+}
+
+// Skill Bar Animation
+function animateSkillBars() {
+    const skillItems = document.querySelectorAll('.skill-item');
+
+    skillItems.forEach(item => {
+        const rect = item.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            item.classList.add('animate');
         }
-        
-        // Counter Animation
-        function animateCounters() {
+    });
+}
+
+// Counter Animation
+function animateCounters() {
     const counters = document.querySelectorAll('.counter');
 
     counters.forEach(counter => {
@@ -410,181 +486,181 @@ function createNewInputLine() {
     });
 }
 
-        
 
 
-        // Add scroll effect to navigation
-        window.addEventListener('scroll', function() {
-            const nav = document.querySelector('nav');
-            if (window.scrollY > 100) {
-                nav.classList.add('bg-code-blue');
-            } else {
-                nav.classList.remove('bg-code-blue');
-            }
-            
-            revealOnScroll();
-            animateTimeline();
-            animateSkillBars();
-            animateCounters();
+
+// Add scroll effect to navigation
+window.addEventListener('scroll', function () {
+    const nav = document.querySelector('nav');
+    if (window.scrollY > 100) {
+        nav.classList.add('bg-code-blue');
+    } else {
+        nav.classList.remove('bg-code-blue');
+    }
+
+    revealOnScroll();
+    animateTimeline();
+    animateSkillBars();
+    animateCounters();
+});
+
+// Funny Eye Watcher System
+class EyeWatcher {
+    constructor() {
+        this.eyeWatcher = document.getElementById('eye-watcher');
+        this.pupil = document.getElementById('pupil');
+        this.eyelid = document.getElementById('eyelid');
+        this.message = document.getElementById('eye-message');
+        this.messageIndex = -1; // Start at -1 so first increment makes it 0
+        this.isBlinking = false;
+        this.isVisible = false;
+
+        this.messages = [
+            "I see you 👀",
+            "Now I have all your data 😈",
+            "No just kidding! 😄"
+        ];
+
+        // Different corner positions for each message (responsive)
+        this.positions = [
+            { top: '64px', right: '8px', left: 'auto', bottom: 'auto' }, // Top-right (mobile: top-16, right-2)
+            { top: 'auto', right: 'auto', left: '8px', bottom: '20px' }, // Bottom-left (mobile: left-2)
+            { top: '64px', right: 'auto', left: '8px', bottom: 'auto' }  // Top-left (mobile: top-16, left-2)
+        ];
+
+        // Desktop positions (will be applied via media query check)
+        this.desktopPositions = [
+            { top: '80px', right: '24px', left: 'auto', bottom: 'auto' }, // Top-right (desktop: top-20, right-6)
+            { top: 'auto', right: 'auto', left: '24px', bottom: '20px' }, // Bottom-left (desktop: left-6)
+            { top: '80px', right: 'auto', left: '24px', bottom: 'auto' }  // Top-left (desktop: top-20, left-6)
+        ];
+
+        this.init();
+    }
+
+    init() {
+        // Show eye after 2 seconds
+        setTimeout(() => {
+            this.showNextMessage();
+        }, 2000);
+
+        // Track mouse movement for pupil
+        document.addEventListener('mousemove', (e) => {
+            this.trackMouse(e);
         });
 
-        // Funny Eye Watcher System
-        class EyeWatcher {
-            constructor() {
-                this.eyeWatcher = document.getElementById('eye-watcher');
-                this.pupil = document.getElementById('pupil');
-                this.eyelid = document.getElementById('eyelid');
-                this.message = document.getElementById('eye-message');
-                this.messageIndex = -1; // Start at -1 so first increment makes it 0
-                this.isBlinking = false;
-                this.isVisible = false;
-                
-                this.messages = [
-                    "I see you 👀",
-                    "Now I have all your data 😈",
-                    "No just kidding! 😄"
-                ];
-                
-                // Different corner positions for each message (responsive)
-                this.positions = [
-                    { top: '64px', right: '8px', left: 'auto', bottom: 'auto' }, // Top-right (mobile: top-16, right-2)
-                    { top: 'auto', right: 'auto', left: '8px', bottom: '20px' }, // Bottom-left (mobile: left-2)
-                    { top: '64px', right: 'auto', left: '8px', bottom: 'auto' }  // Top-left (mobile: top-16, left-2)
-                ];
-                
-                // Desktop positions (will be applied via media query check)
-                this.desktopPositions = [
-                    { top: '80px', right: '24px', left: 'auto', bottom: 'auto' }, // Top-right (desktop: top-20, right-6)
-                    { top: 'auto', right: 'auto', left: '24px', bottom: '20px' }, // Bottom-left (desktop: left-6)
-                    { top: '80px', right: 'auto', left: '24px', bottom: 'auto' }  // Top-left (desktop: top-20, left-6)
-                ];
-                
-                this.init();
+        // Random blinking
+        setInterval(() => {
+            if (!this.isBlinking && this.isVisible && Math.random() < 0.3) {
+                this.blink();
             }
-            
-            init() {
-                // Show eye after 2 seconds
-                setTimeout(() => {
-                    this.showNextMessage();
-                }, 2000);
-                
-                // Track mouse movement for pupil
-                document.addEventListener('mousemove', (e) => {
-                    this.trackMouse(e);
-                });
-                
-                // Random blinking
-                setInterval(() => {
-                    if (!this.isBlinking && this.isVisible && Math.random() < 0.3) {
-                        this.blink();
-                    }
-                }, 2000);
-            }
-            
-            showNextMessage() {
-                this.messageIndex++;
-                
-                // If we've shown all messages, hide and schedule next appearance
-                if (this.messageIndex >= this.messages.length) {
-                    this.hideEye();
-                    return;
-                }
-                
-                // Set position for current message (responsive)
-                const isDesktop = window.innerWidth >= 640; // sm breakpoint
-                const positions = isDesktop ? this.desktopPositions : this.positions;
-                const position = positions[this.messageIndex];
-                
-                this.eyeWatcher.style.top = position.top;
-                this.eyeWatcher.style.right = position.right;
-                this.eyeWatcher.style.left = position.left;
-                this.eyeWatcher.style.bottom = position.bottom;
-                
-                // Set the message
-                this.message.textContent = this.messages[this.messageIndex];
-                
-                // Show the eye
-                this.isVisible = true;
-                this.eyeWatcher.style.transform = 'translateX(0) scale(1)';
-                this.eyeWatcher.style.opacity = '1';
-                
-                // Hide after 4 seconds and show next message
-                setTimeout(() => {
-                    this.hideCurrentMessage();
-                }, 4000);
-            }
-            
-            hideCurrentMessage() {
-                this.isVisible = false;
-                this.eyeWatcher.style.transform = 'scale(0.8)';
-                this.eyeWatcher.style.opacity = '0';
-                
-                // Wait 1 second then show next message
-                setTimeout(() => {
-                    this.showNextMessage();
-                }, 1000);
-            }
-            
-            hideEye() {
-                this.isVisible = false;
-                this.eyeWatcher.style.transform = 'scale(0.8)';
-                this.eyeWatcher.style.opacity = '0';
-                
-                // Schedule next appearance (30-60 seconds later)
-                const nextAppearance = Math.random() * 30000 + 30000; // 30-60 seconds
-                setTimeout(() => {
-                    this.messageIndex = -1; // Reset message index
-                    this.showNextMessage();
-                }, nextAppearance);
-            }
-            
-            trackMouse(e) {
-                if (this.isBlinking || !this.isVisible) return;
-                
-                const eyeRect = this.pupil.parentElement.getBoundingClientRect();
-                const eyeCenterX = eyeRect.left + eyeRect.width / 2;
-                const eyeCenterY = eyeRect.top + eyeRect.height / 2;
-                
-                const angle = Math.atan2(e.clientY - eyeCenterY, e.clientX - eyeCenterX);
-                const distance = Math.min(8, Math.sqrt(Math.pow(e.clientX - eyeCenterX, 2) + Math.pow(e.clientY - eyeCenterY, 2)) / 10);
-                
-                const pupilX = Math.cos(angle) * distance;
-                const pupilY = Math.sin(angle) * distance;
-                
-                this.pupil.style.transform = `translate(${pupilX}px, ${pupilY}px)`;
-            }
-            
-            blink() {
-                this.isBlinking = true;
-                this.eyelid.style.height = '100%';
-                
-                setTimeout(() => {
-                    this.eyelid.style.height = '0%';
-                    this.isBlinking = false;
-                }, 150);
-            }
-        }
-        
-        function closeEyeWatcher() {
-            const eyeWatcher = document.getElementById('eye-watcher');
-            eyeWatcher.style.transform = 'translateX(100%) scale(0.8)';
-            eyeWatcher.style.opacity = '0';
-            
-            setTimeout(() => {
-                eyeWatcher.style.display = 'none';
-            }, 500);
+        }, 2000);
+    }
+
+    showNextMessage() {
+        this.messageIndex++;
+
+        // If we've shown all messages, hide and schedule next appearance
+        if (this.messageIndex >= this.messages.length) {
+            this.hideEye();
+            return;
         }
 
-        // Project Demo Functions
-        function openProjectDemo(projectType) {
-            const modal = document.getElementById('project-modal');
-            const title = document.getElementById('modal-title');
-            const body = document.getElementById('modal-body');
-            
-            const projects = {
-                bitari2ak: {
-                    title: '🚚 BiTari2ak - Delivery App Platform',
-                    content: `
+        // Set position for current message (responsive)
+        const isDesktop = window.innerWidth >= 640; // sm breakpoint
+        const positions = isDesktop ? this.desktopPositions : this.positions;
+        const position = positions[this.messageIndex];
+
+        this.eyeWatcher.style.top = position.top;
+        this.eyeWatcher.style.right = position.right;
+        this.eyeWatcher.style.left = position.left;
+        this.eyeWatcher.style.bottom = position.bottom;
+
+        // Set the message
+        this.message.textContent = this.messages[this.messageIndex];
+
+        // Show the eye
+        this.isVisible = true;
+        this.eyeWatcher.style.transform = 'translateX(0) scale(1)';
+        this.eyeWatcher.style.opacity = '1';
+
+        // Hide after 4 seconds and show next message
+        setTimeout(() => {
+            this.hideCurrentMessage();
+        }, 4000);
+    }
+
+    hideCurrentMessage() {
+        this.isVisible = false;
+        this.eyeWatcher.style.transform = 'scale(0.8)';
+        this.eyeWatcher.style.opacity = '0';
+
+        // Wait 1 second then show next message
+        setTimeout(() => {
+            this.showNextMessage();
+        }, 1000);
+    }
+
+    hideEye() {
+        this.isVisible = false;
+        this.eyeWatcher.style.transform = 'scale(0.8)';
+        this.eyeWatcher.style.opacity = '0';
+
+        // Schedule next appearance (30-60 seconds later)
+        const nextAppearance = Math.random() * 30000 + 30000; // 30-60 seconds
+        setTimeout(() => {
+            this.messageIndex = -1; // Reset message index
+            this.showNextMessage();
+        }, nextAppearance);
+    }
+
+    trackMouse(e) {
+        if (this.isBlinking || !this.isVisible) return;
+
+        const eyeRect = this.pupil.parentElement.getBoundingClientRect();
+        const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+        const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+
+        const angle = Math.atan2(e.clientY - eyeCenterY, e.clientX - eyeCenterX);
+        const distance = Math.min(8, Math.sqrt(Math.pow(e.clientX - eyeCenterX, 2) + Math.pow(e.clientY - eyeCenterY, 2)) / 10);
+
+        const pupilX = Math.cos(angle) * distance;
+        const pupilY = Math.sin(angle) * distance;
+
+        this.pupil.style.transform = `translate(${pupilX}px, ${pupilY}px)`;
+    }
+
+    blink() {
+        this.isBlinking = true;
+        this.eyelid.style.height = '100%';
+
+        setTimeout(() => {
+            this.eyelid.style.height = '0%';
+            this.isBlinking = false;
+        }, 150);
+    }
+}
+
+function closeEyeWatcher() {
+    const eyeWatcher = document.getElementById('eye-watcher');
+    eyeWatcher.style.transform = 'translateX(100%) scale(0.8)';
+    eyeWatcher.style.opacity = '0';
+
+    setTimeout(() => {
+        eyeWatcher.style.display = 'none';
+    }, 500);
+}
+
+// Project Demo Functions
+function openProjectDemo(projectType) {
+    const modal = document.getElementById('project-modal');
+    const title = document.getElementById('modal-title');
+    const body = document.getElementById('modal-body');
+
+    const projects = {
+        Dibo: {
+            title: '🚚 Dibo - Delivery App Platform',
+            content: `
                         <div class="mb-6">
                             <p class="text-lg mb-4">Complete delivery ecosystem with mobile app and web dashboard:</p>
                             <div class="grid md:grid-cols-2 gap-6 mb-6">
@@ -628,10 +704,53 @@ function createNewInputLine() {
                             </button>
                         </div>
                     `
-                },
-                pos: {
-                    title: '🏪 Professional POS System',
-                    content: `
+        },
+        Rayehni: {
+            title: '🛠️ Rayehni - Services Application',
+            content: `
+                        <div class="mb-6">
+                            <p class="text-lg mb-4">Comprehensive services application connecting users with service providers:</p>
+                            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                                <div class="space-y-3">
+                                    <h4 class="text-accent-cyan font-semibold">✨ Key Features:</h4>
+                                    <ul class="space-y-2 text-sm">
+                                        <li>• Flutter Mobile App (iOS & Android)</li>
+                                        <li>• React Admin Dashboard</li>
+                                        <li>• Service Booking System</li>
+                                        <li>• Real-time Status Updates</li>
+                                        <li>• User & Provider Profiles</li>
+                                        <li>• Rating & Review System</li>
+                                    </ul>
+                                </div>
+                                <div class="space-y-3">
+                                    <h4 class="text-accent-cyan font-semibold">🛠️ Technologies:</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full">Flutter</span>
+                                        <span class="px-3 py-1 bg-orange-500/20 text-orange-400 text-sm rounded-full">Firebase</span>
+                                        <span class="px-3 py-1 bg-accent-blue/20 text-accent-blue text-sm rounded-full">React</span>
+                                        <span class="px-3 py-1 bg-[#1ABC9C]/20 text-[#1ABC9C] text-sm rounded-full">Node.js</span>
+                                    </div>
+                                    <h4 class="text-accent-cyan font-semibold mt-4">🎯 Project Highlights:</h4>
+                                    <ul class="space-y-1 text-sm text-gray-300">
+                                        <li>• Available on iOS & Android</li>
+                                        <li>• Seamless Service Management</li>
+                                        <li>• Efficient Admin Control</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-[#1ABC9C]/10 to-teal-500/10 p-4 rounded-lg text-center border border-[#1ABC9C]/20">
+                            <p class="text-[#1ABC9C] mb-3">📱 Complete Services Solution</p>
+                            <p class="text-sm text-gray-400 mb-4">A powerful platform for managing and booking services on the go.</p>
+                            <button onclick="scrollToSection('contact'); closeModal();" class="bg-[#1ABC9C] hover:bg-[#1ABC9C]/80 px-6 py-2 rounded-lg font-semibold transition-all duration-300">
+                                Request Demo
+                            </button>
+                        </div>
+                    `
+        },
+        pos: {
+            title: '🏪 Professional POS System',
+            content: `
                         <div class="mb-6">
                             <p class="text-lg mb-4">Enterprise-grade Point of Sale desktop application:</p>
                             <div class="grid md:grid-cols-2 gap-6 mb-6">
@@ -675,10 +794,10 @@ function createNewInputLine() {
                             </button>
                         </div>
                     `
-                },
-                menu: {
-                    title: '🍽️ Digital Restaurant Menu System',
-                    content: `
+        },
+        menu: {
+            title: '🍽️ Digital Restaurant Menu System',
+            content: `
                         <div class="mb-6">
                             <p class="text-lg mb-4">Interactive digital menu solution for modern restaurants:</p>
                             <div class="grid md:grid-cols-2 gap-6 mb-6">
@@ -722,29 +841,29 @@ function createNewInputLine() {
                             </button>
                         </div>
                     `
-                }
-            };
-            
-            const project = projects[projectType];
-            title.textContent = project.title;
-            body.innerHTML = project.content;
-            modal.classList.add('active');
         }
-        
-        function closeModal() {
-            document.getElementById('project-modal').classList.remove('active');
-        }
-        
-        // Service Modal Functions
-        function openServiceModal(serviceType) {
-            const modal = document.getElementById('service-modal');
-            const title = document.getElementById('service-modal-title');
-            const body = document.getElementById('service-modal-body');
-            
-            const services = {
-                web: {
-                    title: '🌐 Web Development Services',
-                    content: `
+    };
+
+    const project = projects[projectType];
+    title.textContent = project.title;
+    body.innerHTML = project.content;
+    modal.classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('project-modal').classList.remove('active');
+}
+
+// Service Modal Functions
+function openServiceModal(serviceType) {
+    const modal = document.getElementById('service-modal');
+    const title = document.getElementById('service-modal-title');
+    const body = document.getElementById('service-modal-body');
+
+    const services = {
+        web: {
+            title: '🌐 Web Development Services',
+            content: `
                         <div class="space-y-6">
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div>
@@ -823,10 +942,10 @@ function createNewInputLine() {
                             </div>
                         </div>
                     `
-                },
-                mobile: {
-                    title: '📱 Mobile Development Services',
-                    content: `
+        },
+        mobile: {
+            title: '📱 Mobile Development Services',
+            content: `
                         <div class="space-y-6">
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div>
@@ -902,43 +1021,43 @@ function createNewInputLine() {
                             </div>
                         </div>
                     `
-                }
-            };
-            
-            const service = services[serviceType];
-            title.textContent = service.title;
-            body.innerHTML = service.content;
-            modal.classList.add('active');
         }
-        
-        function closeServiceModal() {
-            document.getElementById('service-modal').classList.remove('active');
-        }
+    };
 
-        // Initialize everything
-        document.addEventListener('DOMContentLoaded', function() {
-            new FloatingCodeSystem();
-            new EyeWatcher();
-            typeText();
-            revealOnScroll();
-            
-            // Close modals with Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeTerminal();
-                    closeModal();
-                    closeServiceModal();
-                }
-            });
-            
-            // Close modals when clicking outside
-            document.getElementById('project-modal').addEventListener('click', function(e) {
-                if (e.target === this) closeModal();
-            });
-            
-            document.getElementById('service-modal').addEventListener('click', function(e) {
-                if (e.target === this) closeServiceModal();
-            });
-        });
-   
-(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9793b922073b4b31',t:'MTc1Njg4NjUyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();
+    const service = services[serviceType];
+    title.textContent = service.title;
+    body.innerHTML = service.content;
+    modal.classList.add('active');
+}
+
+function closeServiceModal() {
+    document.getElementById('service-modal').classList.remove('active');
+}
+
+// Initialize everything
+document.addEventListener('DOMContentLoaded', function () {
+    new FloatingCodeSystem();
+    new EyeWatcher();
+    typeText();
+    revealOnScroll();
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeTerminal();
+            closeModal();
+            closeServiceModal();
+        }
+    });
+
+    // Close modals when clicking outside
+    document.getElementById('project-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeModal();
+    });
+
+    document.getElementById('service-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeServiceModal();
+    });
+});
+
+(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9793b922073b4b31',t:'MTc1Njg4NjUyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();
