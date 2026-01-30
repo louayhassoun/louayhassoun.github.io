@@ -1034,10 +1034,251 @@ function closeServiceModal() {
     document.getElementById('service-modal').classList.remove('active');
 }
 
+// Video and 3D Card Controller
+class CardVideoController {
+    constructor() {
+        this.video = document.getElementById('cardVideo');
+        this.card3dContainer = document.getElementById('card3d');
+        
+        if (!this.video || !this.card3dContainer) return;
+        
+        this.card3d = null; // Will be initialized after first video ends
+        this.isFirstLoad = true;
+        
+        this.init();
+    }
+    
+    init() {
+        // When video ends, show the 3D card
+        this.video.addEventListener('ended', () => {
+            this.showCard3D();
+        });
+        
+        // Play video on page load
+        this.playVideo();
+        
+        // When 3D card is clicked/tapped, play video again
+        this.card3dContainer.addEventListener('click', (e) => {
+            // Only trigger on click, not on drag
+            if (!this.card3d || !this.card3d.wasDragging) {
+                this.playVideo();
+            }
+        });
+    }
+    
+    playVideo() {
+        // Hide 3D card, show video
+        this.card3dContainer.style.display = 'none';
+        this.video.classList.remove('hidden');
+        this.video.style.display = 'block';
+        
+        // Reset and play
+        this.video.currentTime = 0;
+        this.video.play().catch(err => {
+            // Autoplay might be blocked, show card directly
+            console.log('Video autoplay blocked, showing card');
+            this.showCard3D();
+        });
+    }
+    
+    showCard3D() {
+        // Hide video, show 3D card
+        this.video.style.display = 'none';
+        this.video.classList.add('hidden');
+        this.card3dContainer.style.display = 'flex';
+        
+        // Initialize 3D card if not already done
+        if (!this.card3d) {
+            this.card3d = new Card3D(this.card3dContainer);
+        }
+    }
+}
+
+// 3D Interactive Card - Full 360° Rotation
+class Card3D {
+    constructor(container) {
+        this.container = container || document.getElementById('card3d');
+        if (!this.container) return;
+
+        this.card = this.container.querySelector('.card-3d');
+        this.cardInner = this.container.querySelector('.card-3d-inner');
+        this.shine = this.container.querySelector('.card-3d-shine');
+        this.shadow = this.container.querySelector('.card-3d-shadow');
+        this.hint = this.container.querySelector('.card-3d-hint');
+
+        // Rotation state
+        this.rotateX = 0;
+        this.rotateY = 0;
+        this.targetRotateX = 0;
+        this.targetRotateY = 0;
+        this.velocityX = 0;
+        this.velocityY = 0;
+
+        // Interaction state
+        this.isDragging = false;
+        this.wasDragging = false; // Track if we just finished dragging
+        this.lastX = 0;
+        this.lastY = 0;
+        this.dragDistance = 0;
+
+        // Animation
+        this.floatTime = 0;
+
+        this.init();
+        this.animate();
+    }
+
+    init() {
+        // Mouse events
+        this.container.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            this.startDrag(e.clientX, e.clientY);
+        });
+        document.addEventListener('mousemove', (e) => this.onDrag(e.clientX, e.clientY));
+        document.addEventListener('mouseup', () => this.endDrag());
+
+        // Touch events
+        this.container.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            this.startDrag(touch.clientX, touch.clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!this.isDragging) return;
+            const touch = e.touches[0];
+            this.onDrag(touch.clientX, touch.clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => this.endDrag());
+
+        // Double click to flip
+        this.container.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            this.targetRotateY += 180;
+        });
+
+        // Prevent context menu
+        this.container.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+
+    startDrag(x, y) {
+        this.isDragging = true;
+        this.wasDragging = false;
+        this.dragDistance = 0;
+        this.lastX = x;
+        this.lastY = y;
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.container.style.cursor = 'grabbing';
+        if (this.hint) this.hint.style.display = 'none';
+    }
+
+    onDrag(x, y) {
+        if (!this.isDragging) return;
+
+        const deltaX = x - this.lastX;
+        const deltaY = y - this.lastY;
+        
+        this.dragDistance += Math.abs(deltaX) + Math.abs(deltaY);
+
+        // Add to rotation (Y rotation from horizontal drag, X rotation from vertical drag)
+        this.targetRotateY += deltaX * 0.5;
+        this.targetRotateX -= deltaY * 0.5;
+
+        // Store velocity for momentum
+        this.velocityX = deltaX * 0.5;
+        this.velocityY = -deltaY * 0.5;
+
+        this.lastX = x;
+        this.lastY = y;
+    }
+
+    endDrag() {
+        if (this.isDragging) {
+            this.isDragging = false;
+            // Consider it a drag if moved more than 10px
+            this.wasDragging = this.dragDistance > 10;
+            this.container.style.cursor = 'grab';
+            
+            // Reset wasDragging after a short delay
+            setTimeout(() => {
+                this.wasDragging = false;
+            }, 100);
+        }
+    }
+
+    animate() {
+        this.floatTime += 0.02;
+
+        // Apply momentum when not dragging
+        if (!this.isDragging) {
+            this.targetRotateY += this.velocityX;
+            this.targetRotateX += this.velocityY;
+
+            // Friction
+            this.velocityX *= 0.95;
+            this.velocityY *= 0.95;
+        }
+
+        // Smooth interpolation
+        this.rotateX += (this.targetRotateX - this.rotateX) * 0.1;
+        this.rotateY += (this.targetRotateY - this.rotateY) * 0.1;
+
+        // Floating animation
+        const floatY = this.isDragging ? 0 : Math.sin(this.floatTime) * 12;
+        const floatZ = this.isDragging ? 40 : Math.cos(this.floatTime * 0.8) * 15;
+
+        // Apply transform
+        this.card.style.transform = `
+            translateY(${floatY}px)
+            translateZ(${floatZ}px)
+            rotateX(${this.rotateX}deg)
+            rotateY(${this.rotateY}deg)
+        `;
+
+        // Update shine
+        if (this.shine) {
+            const shineIntensity = Math.abs(Math.cos(this.rotateY * Math.PI / 180)) * 0.6;
+            this.shine.style.opacity = shineIntensity;
+            this.shine.style.background = `
+                linear-gradient(
+                    ${105 + this.rotateY * 0.3}deg,
+                    transparent 10%,
+                    rgba(255, 255, 255, 0.2) 40%,
+                    rgba(255, 255, 255, 0.6) 50%,
+                    rgba(255, 255, 255, 0.2) 60%,
+                    transparent 90%
+                )
+            `;
+        }
+
+        // Update shadow
+        if (this.shadow) {
+            const shadowX = Math.sin(this.rotateY * Math.PI / 180) * 40;
+            const shadowY = Math.sin(this.rotateX * Math.PI / 180) * 20;
+            const shadowOpacity = 0.3 + Math.abs(Math.cos(this.rotateY * Math.PI / 180)) * 0.2;
+            this.shadow.style.transform = `translateX(calc(-50% + ${shadowX}px)) translateY(${shadowY}px)`;
+            this.shadow.style.opacity = shadowOpacity;
+        }
+
+        // Dynamic glow based on movement
+        if (this.cardInner) {
+            const speed = Math.abs(this.velocityX) + Math.abs(this.velocityY);
+            this.cardInner.style.boxShadow = `
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 0 ${40 + speed * 10}px rgba(59, 130, 246, ${0.2 + speed * 0.05})
+            `;
+        }
+
+        requestAnimationFrame(() => this.animate());
+    }
+}
+
 // Initialize everything
 document.addEventListener('DOMContentLoaded', function () {
     new FloatingCodeSystem();
     new EyeWatcher();
+    new CardVideoController();
     typeText();
     revealOnScroll();
 

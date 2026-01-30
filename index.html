@@ -59,7 +59,7 @@
       }
     }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -265,32 +265,31 @@
                     </a>
                 </div>
             </div>
-            <div class="floating-animation mt-8 lg:mt-0">
-                <div class="code-block rounded-2xl p-4 sm:p-6 lg:p-8 relative z-10 max-w-lg mx-auto lg:max-w-none"
-                    onclick="animateCode()">
-                    <div class="flex items-center mb-4 sm:mb-6">
-                        <div class="flex space-x-2 sm:space-x-3">
-                            <div class="w-3 h-3 sm:w-4 sm:h-4 bg-red-500 rounded-full shadow-lg"></div>
-                            <div class="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-500 rounded-full shadow-lg"></div>
-                            <div class="w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full shadow-lg"></div>
+            <div class="mt-8 lg:mt-0 flex justify-center">
+                <div class="card-video-3d-wrapper" id="cardWrapper">
+                    <!-- Video that plays on load and on tap -->
+                    <video id="cardVideo" class="card-video" muted playsinline>
+                        <source src="assets/images/transparent_background_as_a_3d_computer_generated_cartoon.mp4" type="video/mp4">
+                    </video>
+                    
+                    <!-- 3D Card (hidden initially) -->
+                    <div class="card-3d-container" id="card3d" style="display: none;">
+                        <div class="card-3d">
+                            <div class="card-3d-inner">
+                                <div class="card-3d-front">
+                                    <img src="assets/images/card2.png" alt="Louay Hassoun" class="card-3d-image">
+                                </div>
+                                <div class="card-3d-back">
+                                    <div class="card-3d-back-content">
+                                        <h3>Louay Hassoun</h3>
+                                        <p>Software Developer</p>
+                                    </div>
+                                </div>
+                                <div class="card-3d-shine"></div>
+                            </div>
+                            <div class="card-3d-shadow"></div>
+                            <div class="card-3d-hint">Drag to rotate</div>
                         </div>
-                        <div class="ml-4 sm:ml-6 text-gray-400 font-mono font-medium text-sm sm:text-base">developer.js
-                        </div>
-                    </div>
-                    <div class="font-mono text-sm sm:text-base leading-relaxed" id="code-content">
-                        <div class="text-purple-400 font-semibold">const</div>
-                        <div class="text-accent-cyan ml-2 sm:ml-4 font-semibold">developer = {</div>
-                        <div class="ml-4 sm:ml-8 text-gray-300 break-all">name: <span
-                                class="text-green-400 font-medium">"Louay Hassoun"</span>,</div>
-                        <div class="ml-4 sm:ml-8 text-gray-300 break-all">skills: [<span
-                                class="text-green-400 font-medium">"React"</span>, <span
-                                class="text-green-400 font-medium">"C#"</span>, <span
-                                class="text-green-400 font-medium">"Flutter"</span>],</div>
-                        <div class="ml-4 sm:ml-8 text-gray-300 break-all">passion: <span
-                                class="text-green-400 font-medium">"Building Amazing Apps"</span>,</div>
-                        <div class="ml-4 sm:ml-8 text-gray-300">available: <span
-                                class="text-orange-400 font-semibold">true</span></div>
-                        <div class="text-accent-cyan font-semibold">};</div>
                     </div>
                 </div>
             </div>
