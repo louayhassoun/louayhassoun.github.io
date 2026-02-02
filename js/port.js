@@ -159,7 +159,27 @@ function createNewInputLine() {
             input.removeEventListener('keypress', handler);
 
             // Show command output
-            if (terminalCommands[command]) {
+            if (command === 'manga') {
+                const output = document.createElement('div');
+                output.classList.add('text-accent-cyan', 'mb-2');
+                output.textContent = 'Accessing secure data...';
+                body.appendChild(output);
+
+                if (window.mangaCommand) {
+                    window.mangaCommand().then(msg => {
+                        output.textContent = msg;
+                        createNewInputLine();
+                    }).catch(err => {
+                        output.textContent = 'Error: ' + err.message;
+                        output.classList.add('text-red-400');
+                        createNewInputLine();
+                    });
+                    return; // Exit here as createNewInputLine is called in then/catch
+                } else {
+                    output.textContent = 'Error: Manga system not initialized.';
+                    output.classList.add('text-red-400');
+                }
+            } else if (terminalCommands[command]) {
                 if (command === 'clear') {
                     body.innerHTML = `<div>Welcome to CodeByLouay Terminal v2.0</div>
                                       <div>Type 'help' for available commands</div>`;
@@ -1039,24 +1059,24 @@ class CardVideoController {
     constructor() {
         this.video = document.getElementById('cardVideo');
         this.card3dContainer = document.getElementById('card3d');
-        
+
         if (!this.video || !this.card3dContainer) return;
-        
+
         this.card3d = null; // Will be initialized after first video ends
         this.isFirstLoad = true;
-        
+
         this.init();
     }
-    
+
     init() {
         // When video ends, show the 3D card
         this.video.addEventListener('ended', () => {
             this.showCard3D();
         });
-        
+
         // Play video on page load
         this.playVideo();
-        
+
         // When 3D card is clicked/tapped, play video again
         this.card3dContainer.addEventListener('click', (e) => {
             // Only trigger on click, not on drag
@@ -1065,13 +1085,13 @@ class CardVideoController {
             }
         });
     }
-    
+
     playVideo() {
         // Hide 3D card, show video
         this.card3dContainer.style.display = 'none';
         this.video.classList.remove('hidden');
         this.video.style.display = 'block';
-        
+
         // Reset and play
         this.video.currentTime = 0;
         this.video.play().catch(err => {
@@ -1080,13 +1100,13 @@ class CardVideoController {
             this.showCard3D();
         });
     }
-    
+
     showCard3D() {
         // Hide video, show 3D card
         this.video.style.display = 'none';
         this.video.classList.add('hidden');
         this.card3dContainer.style.display = 'flex';
-        
+
         // Initialize 3D card if not already done
         if (!this.card3d) {
             this.card3d = new Card3D(this.card3dContainer);
@@ -1178,7 +1198,7 @@ class Card3D {
 
         const deltaX = x - this.lastX;
         const deltaY = y - this.lastY;
-        
+
         this.dragDistance += Math.abs(deltaX) + Math.abs(deltaY);
 
         // Add to rotation (Y rotation from horizontal drag, X rotation from vertical drag)
@@ -1199,7 +1219,7 @@ class Card3D {
             // Consider it a drag if moved more than 10px
             this.wasDragging = this.dragDistance > 10;
             this.container.style.cursor = 'grab';
-            
+
             // Reset wasDragging after a short delay
             setTimeout(() => {
                 this.wasDragging = false;
