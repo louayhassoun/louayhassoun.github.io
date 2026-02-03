@@ -1074,16 +1074,50 @@ class CardVideoController {
             this.showCard3D();
         });
 
+        // Handle video loading states
+        this.video.addEventListener('waiting', () => {
+            // Video is buffering, maybe show a small loader if needed
+        });
+
+        this.video.addEventListener('canplay', () => {
+            // Video is ready to start
+            if (this.isFirstLoad) {
+                // Keep showing placeholder for a tiny bit to ensure no flickering
+            }
+        });
+
         // Play video on page load
-        this.playVideo();
+        this.playFirstTime();
 
         // When 3D card is clicked/tapped, play video again
         this.card3dContainer.addEventListener('click', (e) => {
-            // Only trigger on click, not on drag
             if (!this.card3d || !this.card3d.wasDragging) {
                 this.playVideo();
             }
         });
+    }
+
+    async playFirstTime() {
+        // Show placeholder initially if possible
+        this.card3dContainer.style.display = 'flex';
+        this.video.style.display = 'none';
+
+        // Pre-initialize 3D card as placeholder
+        if (!this.card3d) {
+            this.card3d = new Card3D(this.card3dContainer);
+        }
+
+        try {
+            // Try to load video in background
+            await this.video.load();
+
+            // Give it a moment to buffer
+            setTimeout(() => {
+                this.playVideo();
+            }, 500);
+        } catch (e) {
+            console.log("Preload failed, showing card");
+        }
     }
 
     playVideo() {
@@ -1094,11 +1128,14 @@ class CardVideoController {
 
         // Reset and play
         this.video.currentTime = 0;
-        this.video.play().catch(err => {
-            // Autoplay might be blocked, show card directly
-            console.log('Video autoplay blocked, showing card');
-            this.showCard3D();
-        });
+        const playPromise = this.video.play();
+
+        if (playPromise !== undefined) {
+            playPromise.catch(err => {
+                console.log('Video play failed:', err);
+                this.showCard3D();
+            });
+        }
     }
 
     showCard3D() {
@@ -1111,6 +1148,7 @@ class CardVideoController {
         if (!this.card3d) {
             this.card3d = new Card3D(this.card3dContainer);
         }
+        this.isFirstLoad = false;
     }
 }
 
