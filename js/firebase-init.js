@@ -3,13 +3,16 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 import {
     getFirestore,
     collection,
-    addDoc,
+    doc,
+    setDoc,
     getDocs,
     query,
     orderBy,
     where,
     limit,
-    serverTimestamp
+    serverTimestamp,
+    arrayUnion,
+    increment
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import firebaseConfig from "./firebase-config.js";
 
@@ -21,14 +24,13 @@ getAnalytics(app);
 const db = getFirestore(app);
 
 /* ------------------------------------------------------------------ */
-/* iPhone Model Heuristic (BEST-EFFORT)                                */
+/* iPhone Model Heuristic                                              */
 /* ------------------------------------------------------------------ */
 function inferIphoneModel() {
     const w = Math.max(screen.width, screen.height);
     const h = Math.min(screen.width, screen.height);
     const dpr = window.devicePixelRatio;
     const key = `${w}x${h}@${dpr}`;
-
     const map = {
         "390x844@3": "iPhone 12 / 12 Pro / 13 / 14",
         "428x926@3": "iPhone 12 Pro Max / 13 Pro Max / 14 Plus",
@@ -38,7 +40,6 @@ function inferIphoneModel() {
         "393x852@3": "iPhone 14 Pro / 15 Pro",
         "430x932@3": "iPhone 14 Pro Max / 15 Pro Max"
     };
-
     return map[key] ? `Likely ${map[key]}` : null;
 }
 
@@ -60,24 +61,20 @@ function getDeviceInfo() {
     else if (/Safari/i.test(ua)) browser = "Safari";
     else if (/Firefox/i.test(ua)) browser = "Firefox";
 
-    if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
-    else if (/Android/i.test(ua)) os = "Android";
-    else if (/Macintosh/i.test(ua)) os = "MacOS";
-    else if (/Windows/i.test(ua)) os = "Windows";
-    else if (/Linux/i.test(ua)) os = "Linux";
-
-    if (/Android/i.test(ua)) {
-        deviceType = "Mobile";
-        const match = ua.match(/Android.*;\s*([^;]+)\s*Build/);
-        deviceModel = match ? match[1] : "Android Device";
-    }
-
     if (/iPhone|iPad|iPod/i.test(ua)) {
+        os = "iOS";
         deviceType = /iPad/.test(ua) ? "Tablet" : "Mobile";
         deviceModel = /iPad/.test(ua) ? "iPad" : "iPhone";
         const inferred = inferIphoneModel();
         if (inferred) deviceModel += ` (${inferred})`;
-    }
+    } else if (/Android/i.test(ua)) {
+        os = "Android";
+        deviceType = "Mobile";
+        const match = ua.match(/Android.*;\s*([^;]+)\s*Build/);
+        deviceModel = match ? match[1] : "Android Device";
+    } else if (/Macintosh/i.test(ua)) os = "MacOS";
+    else if (/Windows/i.test(ua)) os = "Windows";
+    else if (/Linux/i.test(ua)) os = "Linux";
 
     return { browser, os, deviceType, deviceModel, ua };
 }
@@ -88,10 +85,9 @@ function getDeviceInfo() {
 function getSource(ua, referrer) {
     if (/Instagram/i.test(ua)) return "Instagram";
     if (/FBAN|FBAV/i.test(ua)) return "Facebook";
-    if (/LinkedInApp/i.test(ua) || referrer.includes("linkedin.com"))
+    if (/LinkedInApp/i.test(ua) || (referrer && referrer.includes("linkedin.com")))
         return "LinkedIn";
     if (!referrer) return "Direct";
-
     try {
         return new URL(referrer).hostname;
     } catch {
@@ -100,15 +96,14 @@ function getSource(ua, referrer) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Session ID                                                         */
+/* Session ID Generator                                                 */
 /* ------------------------------------------------------------------ */
 function generateSessionId({ ip, os, browser, deviceModel, source }) {
-    return btoa(`${ip}|${os}|${browser}|${deviceModel}|${source}`)
-        .replace(/=/g, "");
+    return btoa(`${ip}|${os}|${browser}|${deviceModel}|${source}`).replace(/=/g, "");
 }
 
 /* ------------------------------------------------------------------ */
-/* Track Visit                                                        */
+/* Track Visit + Heartbeat                                             */
 /* ------------------------------------------------------------------ */
 async function trackVisit() {
     try {
@@ -129,12 +124,44 @@ async function trackVisit() {
             source
         });
 
-        await addDoc(collection(db, "visitors"), {
-            sessionId,
-            ip,
-            source,
-            ...device,
-            createdAt: serverTimestamp()
+        const ref = doc(db, "visitors", sessionId);
+        let sessionStart = Date.now();
+        const entryTime = new Date().toLocaleString();
+
+        // Save data including the sessionId field explicitly
+        await setDoc(
+            ref,
+            {
+                sessionId, // Storing ID as field for easier reading
+                ip,
+                source,
+                ...device,
+                firstSeen: serverTimestamp(),
+                lastSeen: serverTimestamp(),
+                timeEntered: entryTime,
+                entryHistory: arrayUnion(entryTime),
+                hits: increment(1),
+                duration: 0 // Initialize to 0 so it's not undefined
+            },
+            { merge: true }
+        );
+
+        const interval = setInterval(() => {
+            if (document.visibilityState === "visible") {
+                const duration = Math.round((Date.now() - sessionStart) / 1000);
+                setDoc(ref, { lastSeen: serverTimestamp(), duration }, { merge: true }).catch(console.error);
+            }
+        }, 5000);
+
+        const finalizeDuration = () => {
+            const duration = Math.round((Date.now() - sessionStart) / 1000);
+            setDoc(ref, { lastSeen: serverTimestamp(), duration }, { merge: true }).catch(console.error);
+            clearInterval(interval);
+        };
+
+        window.addEventListener("beforeunload", finalizeDuration);
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") finalizeDuration();
         });
     } catch (e) {
         console.error("Tracking error:", e);
@@ -142,12 +169,11 @@ async function trackVisit() {
 }
 
 /* ------------------------------------------------------------------ */
-/* INTENT SCORING                                                     */
+/* Intent Scoring                                                      */
 /* ------------------------------------------------------------------ */
 function scoreIntent(session) {
     let score = 0;
-
-    if (session.device.includes("Desktop")) score += 3;
+    if (session.device && session.device.includes("Desktop")) score += 3;
     if (session.source === "LinkedIn") score += 4;
     if (session.hits >= 3) score += 2;
     if (session.duration >= 60) score += 2;
@@ -160,7 +186,7 @@ function scoreIntent(session) {
 }
 
 /* ------------------------------------------------------------------ */
-/* mangaCommand Report                                                */
+/* MangaCommand Report Generator                                       */
 /* ------------------------------------------------------------------ */
 window.mangaCommand = async function () {
     const since = new Date();
@@ -168,34 +194,13 @@ window.mangaCommand = async function () {
 
     const q = query(
         collection(db, "visitors"),
-        where("createdAt", ">=", since),
-        orderBy("createdAt", "asc"),
+        where("lastSeen", ">=", since), // Query by lastSeen to get active users
+        orderBy("lastSeen", "desc"),
         limit(500)
     );
 
     const snap = await getDocs(q);
     if (snap.empty) return "No recent visitors.";
-
-    const sessions = {};
-
-    snap.forEach(doc => {
-        const v = doc.data();
-        if (!sessions[v.sessionId]) {
-            sessions[v.sessionId] = {
-                ip: v.ip,
-                device: `${v.deviceModel} (${v.deviceType})`,
-                system: `${v.os} / ${v.browser}`,
-                source: v.source,
-                first: v.createdAt?.toDate(),
-                last: v.createdAt?.toDate(),
-                hits: 1,
-                suspicious: /headless|bot|crawl/i.test(v.ua)
-            };
-        } else {
-            sessions[v.sessionId].hits++;
-            sessions[v.sessionId].last = v.createdAt?.toDate();
-        }
-    });
 
     let report = `
 ========================================================
@@ -205,19 +210,32 @@ Generated: ${new Date().toLocaleString()}
 --------------------------------------------------------
 `;
 
-    Object.values(sessions).forEach(s => {
-        s.duration =
-            s.first && s.last ? Math.round((s.last - s.first) / 1000) : 0;
-        s.intent = scoreIntent(s);
+    snap.forEach(docSnap => {
+        const v = docSnap.data();
+
+        // Use the saved duration or fallback to 0
+        const duration = v.duration || 0;
+
+        // Check for suspicious UA
+        const isSuspicious = /headless|bot|crawl|lighthouse/i.test(v.ua || "");
+
+        const intent = scoreIntent({
+            device: v.deviceModel,
+            source: v.source,
+            hits: v.hits,
+            duration: duration,
+            suspicious: isSuspicious
+        });
 
         report += `
-📍 IP: ${s.ip}
-📱 Device: ${s.device}
-💻 System: ${s.system}
-🔗 Source: ${s.source}
-🔢 Hits: ${s.hits}
-⏱️ Time Spent: ${s.duration}s
-🏷️ Intent: ${s.intent}
+📍 IP: ${v.ip || "Unknown"}
+🕒 Entered: ${v.timeEntered || (v.firstSeen ? v.firstSeen.toDate().toLocaleString() : "N/A")}
+📱 Device: ${v.deviceModel || "Unknown"} (${v.deviceType || "N/A"})
+💻 System: ${v.os || "N/A"} / ${v.browser || "N/A"}
+🔗 Source: ${v.source || "Direct"}
+🔢 Hits: ${v.hits || 1}
+⏱️ Time Spent: ${duration}s
+🏷️ Intent: ${intent}
 --------------------------------------------------------
 `;
     });
@@ -230,10 +248,7 @@ Generated: ${new Date().toLocaleString()}
     a.click();
     URL.revokeObjectURL(url);
 
-    return "Report generated.";
+    return "Report generated and downloading...";
 };
 
-/* ------------------------------------------------------------------ */
-/* Auto Track                                                         */
-/* ------------------------------------------------------------------ */
 trackVisit();
