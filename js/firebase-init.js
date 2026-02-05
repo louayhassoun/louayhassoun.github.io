@@ -6,13 +6,13 @@ import {
     doc,
     setDoc,
     getDocs,
+    getDoc,
     query,
     orderBy,
     where,
     limit,
     serverTimestamp,
-    arrayUnion,
-    increment
+    arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import firebaseConfig from "./firebase-config.js";
 
@@ -22,6 +22,22 @@ import firebaseConfig from "./firebase-config.js";
 const app = initializeApp(firebaseConfig);
 getAnalytics(app);
 const db = getFirestore(app);
+
+/* ------------------------------------------------------------------ */
+/* Client / Session IDs                                                */
+/* ------------------------------------------------------------------ */
+function getClientId() {
+    let id = localStorage.getItem("portfolio_cid");
+    if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem("portfolio_cid", id);
+    }
+    return id;
+}
+
+function createSessionId(clientId) {
+    return `${clientId}_${Date.now()}`;
+}
 
 /* ------------------------------------------------------------------ */
 /* iPhone Model Heuristic                                              */
@@ -96,73 +112,132 @@ function getSource(ua, referrer) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Session ID Generator                                                 */
+/* Scroll Depth                                                        */
 /* ------------------------------------------------------------------ */
-function generateSessionId({ ip, os, browser, deviceModel, source }) {
-    return btoa(`${ip}|${os}|${browser}|${deviceModel}|${source}`).replace(/=/g, "");
+let maxScrollDepth = 0;
+
+function trackScrollDepth() {
+    window.addEventListener("scroll", () => {
+        const scrolled =
+            (window.scrollY + window.innerHeight) /
+            document.documentElement.scrollHeight;
+
+        maxScrollDepth = Math.max(maxScrollDepth, scrolled);
+    });
 }
 
 /* ------------------------------------------------------------------ */
-/* Track Visit + Heartbeat                                             */
+/* Track Visit / Session                                               */
 /* ------------------------------------------------------------------ */
 async function trackVisit() {
     try {
         const device = getDeviceInfo();
         const source = getSource(device.ua, document.referrer);
 
-        let ip = "Unknown";
-        try {
-            const res = await fetch("https://api.ipify.org?format=json");
-            ip = (await res.json()).ip;
-        } catch { }
-
-        const sessionId = generateSessionId({
-            ip,
-            os: device.os,
-            browser: device.browser,
-            deviceModel: device.deviceModel,
-            source
-        });
+        const clientId = getClientId();
+        const sessionId = createSessionId(clientId);
 
         const ref = doc(db, "visitors", sessionId);
-        let sessionStart = Date.now();
-        const entryTime = new Date().toLocaleString();
+        const userRef = doc(db, "users", clientId);
 
-        // Save data including the sessionId field explicitly
+        const entryTime = new Date().toLocaleString();
+        let activeSeconds = 0;
+        let lastTick = Date.now();
+
+        /* ------------------ user doc ------------------ */
+        const userSnap = await getDoc(userRef);
+
         await setDoc(
-            ref,
+            userRef,
             {
-                sessionId, // Storing ID as field for easier reading
-                ip,
-                source,
-                ...device,
-                firstSeen: serverTimestamp(),
+                clientId,
+                firstSeen: userSnap.exists() ? userSnap.data().firstSeen : serverTimestamp(),
                 lastSeen: serverTimestamp(),
-                timeEntered: entryTime,
-                entryHistory: arrayUnion(entryTime),
-                hits: increment(1),
-                duration: 0 // Initialize to 0 so it's not undefined
+                firstSource: userSnap.exists() ? userSnap.data().firstSource : source,
+                deviceSummary: {
+                    os: device.os,
+                    browser: device.browser,
+                    deviceType: device.deviceType,
+                    deviceModel: device.deviceModel
+                }
             },
             { merge: true }
         );
 
-        const interval = setInterval(() => {
-            if (document.visibilityState === "visible") {
-                const duration = Math.round((Date.now() - sessionStart) / 1000);
-                setDoc(ref, { lastSeen: serverTimestamp(), duration }, { merge: true }).catch(console.error);
-            }
-        }, 5000);
+        /* ------------------ session doc ------------------ */
+        await setDoc(ref, {
+            sessionId,
+            clientId,
+            source,
+            ...device,
+            startedAt: serverTimestamp(),
+            lastSeen: serverTimestamp(),
+            timeEntered: entryTime,
+            duration: 0,
+            scrollDepth: 0,
+            events: [],
+            hits: 1
+        });
 
-        const finalizeDuration = () => {
-            const duration = Math.round((Date.now() - sessionStart) / 1000);
-            setDoc(ref, { lastSeen: serverTimestamp(), duration }, { merge: true }).catch(console.error);
-            clearInterval(interval);
+        /* ------------------ duration ticker ------------------ */
+        const ticker = setInterval(() => {
+            const now = Date.now();
+            if (document.visibilityState === "visible") {
+                activeSeconds += (now - lastTick) / 1000;
+            }
+            lastTick = now;
+        }, 1000);
+
+        /* cheap heartbeat to survive mobile webviews */
+        const heartbeat = setInterval(() => {
+            const duration = Math.round(activeSeconds);
+            const scrollDepth = Math.round(maxScrollDepth * 100);
+
+            setDoc(ref, {
+                lastSeen: serverTimestamp(),
+                duration,
+                scrollDepth
+            }, { merge: true }).catch(() => { });
+        }, 20000);
+
+        const finalize = async () => {
+            clearInterval(ticker);
+            clearInterval(heartbeat);
+
+            const duration = Math.round(activeSeconds);
+            const scrollDepth = Math.round(maxScrollDepth * 100);
+
+            await setDoc(ref, {
+                lastSeen: serverTimestamp(),
+                duration,
+                scrollDepth
+            }, { merge: true });
+
+            await setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true });
         };
 
-        window.addEventListener("beforeunload", finalizeDuration);
+        window.addEventListener("beforeunload", finalize);
         document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "hidden") finalizeDuration();
+            if (document.visibilityState === "hidden") finalize().catch(() => { });
         });
+
+        /* ------------------ CTA / Event Tracking ------------------ */
+        document.addEventListener("click", e => {
+            const t = e.target.closest("[data-track]");
+            if (!t) return;
+
+            setDoc(
+                ref,
+                {
+                    events: arrayUnion({
+                        type: t.dataset.track,
+                        at: Date.now()
+                    })
+                },
+                { merge: true }
+            ).catch(() => { });
+        });
+
     } catch (e) {
         console.error("Tracking error:", e);
     }
@@ -173,14 +248,15 @@ async function trackVisit() {
 /* ------------------------------------------------------------------ */
 function scoreIntent(session) {
     let score = 0;
-    if (session.device && session.device.includes("Desktop")) score += 3;
+    if (session.deviceType === "Desktop") score += 3;
     if (session.source === "LinkedIn") score += 4;
-    if (session.hits >= 3) score += 2;
+    if (session.hits >= 2) score += 1;
     if (session.duration >= 60) score += 2;
-    if (!/Instagram|Facebook/.test(session.source)) score += 1;
+    if (session.scrollDepth >= 60) score += 2;
+    if (session.events && session.events.length) score += 2;
 
     if (session.suspicious) return "🤖 Suspicious / Bot";
-    if (score >= 7) return "🎯 LIKELY RECRUITER / SERIOUS REVIEW";
+    if (score >= 8) return "🎯 LIKELY RECRUITER / SERIOUS REVIEW";
     if (score >= 4) return "👀 Interested Visitor";
     return "⚡ Casual / Quick Look";
 }
@@ -194,7 +270,7 @@ window.mangaCommand = async function () {
 
     const q = query(
         collection(db, "visitors"),
-        where("lastSeen", ">=", since), // Query by lastSeen to get active users
+        where("lastSeen", ">=", since),
         orderBy("lastSeen", "desc"),
         limit(500)
     );
@@ -212,29 +288,29 @@ Generated: ${new Date().toLocaleString()}
 
     snap.forEach(docSnap => {
         const v = docSnap.data();
-
-        // Use the saved duration or fallback to 0
         const duration = v.duration || 0;
-
-        // Check for suspicious UA
         const isSuspicious = /headless|bot|crawl|lighthouse/i.test(v.ua || "");
 
         const intent = scoreIntent({
-            device: v.deviceModel,
+            deviceType: v.deviceType,
             source: v.source,
-            hits: v.hits,
-            duration: duration,
+            hits: v.hits || 1,
+            duration,
+            scrollDepth: v.scrollDepth || 0,
+            events: v.events || [],
             suspicious: isSuspicious
         });
 
         report += `
-📍 IP: ${v.ip || "Unknown"}
-🕒 Entered: ${v.timeEntered || (v.firstSeen ? v.firstSeen.toDate().toLocaleString() : "N/A")}
+🆔 Session: ${v.sessionId || docSnap.id}
+👤 Client: ${v.clientId || "legacy"}
+🕒 Entered: ${v.timeEntered || "N/A"}
 📱 Device: ${v.deviceModel || "Unknown"} (${v.deviceType || "N/A"})
 💻 System: ${v.os || "N/A"} / ${v.browser || "N/A"}
 🔗 Source: ${v.source || "Direct"}
-🔢 Hits: ${v.hits || 1}
 ⏱️ Time Spent: ${duration}s
+📜 Scroll: ${v.scrollDepth || 0}%
+🧩 Events: ${(v.events || []).map(e => e.type).join(", ") || "None"}
 🏷️ Intent: ${intent}
 --------------------------------------------------------
 `;
@@ -251,4 +327,6 @@ Generated: ${new Date().toLocaleString()}
     return "Report generated and downloading...";
 };
 
+/* ------------------------------------------------------------------ */
+trackScrollDepth();
 trackVisit();
