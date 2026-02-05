@@ -48,17 +48,17 @@ function inferIphoneModel() {
     const dpr = window.devicePixelRatio;
     const key = `${w}x${h}@${dpr}`;
     const map = {
-        "390x844@3": "iPhone 12 / 12 Pro / 13 / 14",
-        "428x926@3": "iPhone 12 Pro Max / 13 Pro Max / 14 Plus",
-        "375x812@3": "iPhone X / XS / 11 Pro",
-        "414x896@2": "iPhone XR / 11",
-        "360x780@3": "iPhone 12 mini / 13 mini",
-        "393x852@3": "iPhone 14 Pro / 15 Pro",
-        "430x932@3": "iPhone 14 Pro Max / 15 Pro Max",
+        "390x844@3": "iPhone 12/13/14",
+        "428x926@3": "iPhone 12/13/14 Plus/Max",
+        "375x812@3": "iPhone X/XS/11 Pro",
+        "414x896@2": "iPhone XR/11",
+        "360x780@3": "iPhone 12/13 mini",
+        "393x852@3": "iPhone 14/15 Pro",
+        "430x932@3": "iPhone 14/15 Pro Max",
         "402x874@3": "iPhone 16 Pro",
         "440x952@3": "iPhone 16 Pro Max"
     };
-    return map[key] ? map[key] : null;
+    return map[key] || null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -71,9 +71,9 @@ function getDeviceInfo() {
     let deviceType = "Desktop";
     let deviceModel = "Desktop/Laptop";
 
-    if (/Instagram/i.test(ua)) browser = "Instagram WebView";
-    else if (/FBAN|FBAV/i.test(ua)) browser = "Facebook WebView";
-    else if (/LinkedInApp/i.test(ua)) browser = "LinkedIn WebView";
+    if (/Instagram/i.test(ua)) browser = "Instagram";
+    else if (/FBAN|FBAV/i.test(ua)) browser = "Facebook";
+    else if (/LinkedInApp/i.test(ua)) browser = "LinkedIn";
     else if (/Edg/i.test(ua)) browser = "Edge";
     else if (/Chrome/i.test(ua)) browser = "Chrome";
     else if (/Safari/i.test(ua)) browser = "Safari";
@@ -139,12 +139,29 @@ async function trackVisit() {
         const ref = doc(db, "visitors", sessionId);
         const userRef = doc(db, "users", clientId);
 
+        // Fetch Real IP
+        let ip = "Unknown";
+        try {
+            const res = await fetch("https://api.ipify.org?format=json");
+            const data = await res.json();
+            ip = data.ip;
+        } catch (ipErr) {
+            console.warn("IP reveal failed, using fallback.");
+        }
+
         const entryTime = new Date().toLocaleString();
         let activeSeconds = 0;
         let lastTick = Date.now();
 
         // 1. Get User History
-        const userSnap = await getDoc(userRef);
+        let userSnap;
+        try {
+            userSnap = await getDoc(userRef);
+        } catch (permErr) {
+            console.error("Firestore Permission Error: Please check security rules.", permErr);
+            return;
+        }
+
         const currentVisitNumber = userSnap.exists() ? (userSnap.data().visitCount || 0) + 1 : 1;
 
         // 2. Update User Document
@@ -154,6 +171,7 @@ async function trackVisit() {
             lastSeen: serverTimestamp(),
             firstSource: userSnap.exists() ? userSnap.data().firstSource : source,
             visitCount: currentVisitNumber,
+            lastIp: ip,
             deviceSummary: {
                 os: device.os,
                 browser: device.browser,
@@ -166,6 +184,7 @@ async function trackVisit() {
         await setDoc(ref, {
             sessionId,
             clientId,
+            ip,
             source,
             ...device,
             screen: `${window.screen.width}x${window.screen.height}`,
@@ -209,123 +228,128 @@ async function trackVisit() {
             if (document.visibilityState === "hidden") finalize().catch(() => { });
         });
 
-        // 5. Automated CTA / Button Tracking
+        // 5. Automated Interaction Tracking
         document.addEventListener("click", e => {
             const t = e.target.closest("[data-track]") || e.target.closest("a") || e.target.closest("button");
             if (!t) return;
-            const label = t.dataset?.track || t.innerText?.substring(0, 20) || t.href || "Action";
+            const label = t.dataset?.track || t.innerText?.trim().substring(0, 30) || t.href || "Action";
             setDoc(ref, {
                 events: arrayUnion({ type: label, at: Date.now() })
             }, { merge: true }).catch(() => { });
         });
 
     } catch (e) {
-        console.error("Tracking error:", e);
+        if (e.message.includes("permissions")) {
+            console.error("Superpower Tracking: Missing Firestore permissions! Update your rules.");
+        } else {
+            console.error("Tracking error:", e);
+        }
     }
 }
 
 /* ------------------------------------------------------------------ */
-/* Intent Scoring                                                      */
+/* Weighted Intent Scoring (Recruiter Focus)                           */
 /* ------------------------------------------------------------------ */
 function scoreIntent(session) {
-    let score = 0;
-    if (session.deviceType === "Desktop") score += 3;
-    if (session.source === "LinkedIn") score += 4;
-    if (session.visitNumber > 1) score += 3;
-    if (session.duration >= 60) score += 2;
-    if (session.scrollDepth >= 70) score += 2;
-    if (session.events && session.events.length > 0) score += 2;
+    let weight = 0;
 
-    if (session.suspicious) return "🤖 Suspicious / Bot";
-    if (score >= 10) return "🔥 HIGH INTEREST / POTENTIAL RECRUITER";
-    if (score >= 6) return "🎯 Interested Visitor";
-    if (score >= 3) return "👀 Curious Browser";
-    return "⚡ Casual / Quick Look";
+    // Weighted logic (0-100 scale)
+    if (session.source === "LinkedIn") weight += 40;  // Direct professional link
+    if (session.deviceType === "Desktop") weight += 20; // Recruiter work mode
+    if (session.visitNumber > 1) weight += 15;        // Returning interest
+    if (session.duration >= 60) weight += 10;        // Deep dive
+    if (session.scrollDepth >= 70) weight += 10;     // Content consumption
+    if (session.events && session.events.length > 0) weight += 5; // Interactions
+
+    const isSuspicious = /headless|bot|crawl|lighthouse/i.test(session.ua || "");
+    if (isSuspicious) return "🤖 Bot / Crawler";
+
+    if (weight >= 75) return "🔥 TOP RECRUITER / SEVERE INTEREST";
+    if (weight >= 50) return "🎯 Serious Visitor";
+    if (weight >= 25) return "👀 Curious Lead";
+    return "⚡ Casual Browse";
 }
 
 /* ------------------------------------------------------------------ */
-/* MangaCommand - Superpowered Analytics Report                        */
+/* Helper: Download Helper                                            */
 /* ------------------------------------------------------------------ */
-window.mangaCommand = async function () {
-    const since = new Date();
-    since.setDate(since.getDate() - 30);
+function downloadFile(content, fileName, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
 
+/* ------------------------------------------------------------------ */
+/* Manga Reports (TXT & CSV)                                           */
+/* ------------------------------------------------------------------ */
+window.mangaCommand = async function (count = 100) {
     try {
-        const q = query(collection(db, "visitors"), where("lastSeen", ">=", since), orderBy("lastSeen", "desc"), limit(500));
+        const q = query(collection(db, "visitors"), orderBy("lastSeen", "desc"), limit(count));
         const snap = await getDocs(q);
-        if (snap.empty) return "No recent visitor data found.";
+        if (snap.empty) return "No data found.";
 
-        let report = `
-============================================================
-          🚀 CODEBYLOUAY SUPERPOWERED ANALYTICS 🚀
-============================================================
-Generated: ${new Date().toLocaleString()}
-Sessions Analyzed: ${snap.size}
-------------------------------------------------------------
-`;
+        let report = `============================================================\n`;
+        report += `🚀 CODEBYLOUAY SUPER INSIGHTS (Latest ${snap.size})\n`;
+        report += `============================================================\n`;
 
         snap.forEach(docSnap => {
             const v = docSnap.data();
+            const intent = scoreIntent(v);
+            const durationText = `${Math.floor((v.duration || 0) / 60)}m ${(v.duration || 0) % 60}s`;
 
-            // Fallback Logic to kill all N/A
-            const os = v.os || "Unknown OS";
-            const browser = v.browser || "Unknown Browser";
-            const devModel = v.deviceModel || v.device || "Desktop/Laptop";
-            const devType = v.deviceType || (v.ua && /Mobi|Android/i.test(v.ua) ? "Mobile" : "Desktop");
-
-            let timeEntrance = "Just now";
-            if (v.timeEntered && v.timeEntered !== "N/A") timeEntrance = v.timeEntered;
-            else if (v.startedAt && v.startedAt.toDate) timeEntrance = v.startedAt.toDate().toLocaleString();
-            else if (v.firstSeen && v.firstSeen.toDate) timeEntrance = v.firstSeen.toDate().toLocaleString();
-            else if (v.lastSeen && v.lastSeen.toDate) timeEntrance = v.lastSeen.toDate().toLocaleString();
-            else timeEntrance = "Continuous Session";
-
-            const duration = v.duration || 0;
-            const mins = Math.floor(duration / 60);
-            const secs = duration % 60;
-            const isSuspicious = /headless|bot|crawl|lighthouse/i.test(v.ua || "");
-
-            const intent = scoreIntent({
-                deviceType: devType,
-                source: v.source,
-                visitNumber: v.visitNumber || 1,
-                duration: duration,
-                scrollDepth: v.scrollDepth || 0,
-                events: v.events || [],
-                suspicious: isSuspicious
-            });
-
-            report += `
-📍 [IP] ${v.ip || "Hidden"}
-👤 [Visit] User's #${v.visitNumber || 1} time on site
-🕒 [Entrance] ${timeEntrance}
-📱 [Device] ${devModel} (${devType})
-💻 [System] ${os} / ${browser} ${v.language ? `[${v.language}]` : ""}
-🔗 [Referrer] ${v.source || "Direct"}
-⏱️ [Time Spent] ${mins}m ${secs}s
-📜 [Content Seen] ${v.scrollDepth || 0}%
-🧩 [Key Actions] ${(v.events || []).length ? v.events.map(e => e.type).join(" ➔ ") : "None recorded"}
-🏷️ [Intent] ${intent}
-------------------------------------------------------------
-`;
+            report += `📍 [IP] ${v.ip || "Hidden"}\n`;
+            report += `👤 [Visit] #${v.visitNumber || 1} journey by ${v.clientId ? v.clientId.slice(0, 8) : "LEGACY"}\n`;
+            report += `🕒 [Entrance] ${v.timeEntered || "Unknown"}\n`;
+            report += `📱 [Device] ${v.deviceModel || "Desktop"} (${v.os || "OS"})\n`;
+            report += `🔗 [Source] ${v.source || "Direct"}\n`;
+            report += `⏱️ [Time] ${durationText} | [Scroll] ${v.scrollDepth || 0}%\n`;
+            report += `🧩 [Path] ${(v.events || []).map(e => e.type).join(" -> ") || "None"}\n`;
+            report += `🏷️ [Intent] ${intent}\n`;
+            report += `------------------------------------------------------------\n`;
         });
 
-        report += `\n[ END OF REPORT - KEEP BUILDING LOUAY ]\n============================================================`;
-
-        const blob = new Blob([report], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `louay_insights_report_${Date.now()}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        return `Report ready! ${snap.size} visitors analyzed with superpower logic.`;
+        downloadFile(report, `louay_report_${Date.now()}.txt`, "text/plain");
+        return "TXT Report exported.";
     } catch (e) {
-        console.error("Manga Error:", e);
-        return `Error: ${e.message}`;
+        return `Report failed: ${e.message}`;
+    }
+};
+
+window.mangaCSV = async function (count = 100) {
+    try {
+        const q = query(collection(db, "visitors"), orderBy("lastSeen", "desc"), limit(count));
+        const snap = await getDocs(q);
+        if (snap.empty) return "No data.";
+
+        const headers = ["IP", "VisitNum", "Entrance", "Device", "OS", "Source", "Duration(s)", "Scroll(%)", "Intent"];
+        const rows = [headers.join(",")];
+
+        snap.forEach(docSnap => {
+            const v = docSnap.data();
+            const row = [
+                v.ip || "Hidden",
+                v.visitNumber || 1,
+                v.timeEntered ? `"${v.timeEntered}"` : "Unknown",
+                `"${v.deviceModel || "Desktop"}"`,
+                v.os || "OS",
+                v.source || "Direct",
+                v.duration || 0,
+                v.scrollDepth || 0,
+                `"${scoreIntent(v)}"`
+            ];
+            rows.push(row.join(","));
+        });
+
+        downloadFile(rows.join("\n"), `louay_metrics_${Date.now()}.csv`, "text/csv");
+        return "CSV Exported successfully.";
+    } catch (e) {
+        return `CSV failed: ${e.message}`;
     }
 };
 
